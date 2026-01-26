@@ -1,6 +1,6 @@
 if getgenv().GUI_Loaded then return end; getgenv().GUI_Loaded = true
 
-local version, discordCode, ownerId = "4.5.6", "bolabola", 3961485767
+local version, discordCode, ownerId = "4.5.6", "ksxs", 3961485767
 local httprequest = request or http_request or (syn and syn.request) or (http and http.request) or (fluxus and fluxus.request)
 local S = setmetatable({}, { __index = function(t,k) local s=game:GetService(k); t[k]=s; return s end })
 local plr, placeId = S.Players.LocalPlayer, game.PlaceId
@@ -21,7 +21,7 @@ local function goDiscord(code)
         )
 end
 
-local function RequestAPI(route) return httpRequest("GET", "https://api-Painel bolabola-h3xv.onrender.com/"..route) end
+local function RequestAPI(route) return httpRequest("GET", "https://api-ksxspanel-h3xv.onrender.com/"..route) end
 
 local function IsUserBanned()
         local data = RequestAPI("is-banned/"..userId.."?place_name="..S.HttpService:UrlEncode(placeName).."&place_id="..placeId.."&job_id="..jobId)
@@ -33,11 +33,17 @@ end; is_banned = IsUserBanned()
 if is_banned == nil then
         getgenv().GUI_Loaded = false; return
 elseif is_banned then
-        SendNotify("Painel bolabola", "Voc├¬ est├í banido do painel bolabola\nContate o suporte: https://discord.gg/"..discordCode, 10); goDiscord(); task.wait(10)
+        SendNotify("ksx's Panel", "Voc├¬ est├í banido do ksx's Panel\nContate o suporte: https://discord.gg/"..discordCode, 10); goDiscord(); task.wait(10)
         getgenv().GUI_Loaded = false; return
 end
 
 local function GetPing() return math.floor(S.Stats.Network.ServerStatsItem["Data Ping"]:GetValue()) end
+
+local function GetStats()
+    local data = RequestAPI("get-stats")
+    if not data then return "" end
+        return "\n\nOnline: <font color='rgb(200,200,200)'>"..(data.online_count or 0).."</font>".."\nUsers: <font color='rgb(200,200,200)'>"..(data.total_count or 0).."</font>".."\n\nDate: <font color='rgb(200,200,200)'>"..(data.current_date or "N/A").."</font>"
+end
 
 local function GetData()
     local data = RequestAPI("get-data/"..jobId)
@@ -51,7 +57,7 @@ local function GetVip()
         local data = RequestAPI("is-vip/"..userId.."?permission=3f6a0f5d9c7a8d7c2a5d8a7c2c4cbe5c9a7c1e3d9f3f4c9e9f2f8a6d5c6b4a2")
         if not data then return "", "", "", "", "", "" end
         return data["Fling"] or "", data["AntiFling"] or "", data["AntiForce"] or "", data["AntiChatSpy"] or "", data["AutoSacrifice"] or "", data["EscapeHandcuffs"] or ""
-end; if is_vip then vip_fling, vip_antifling, vip_antiforce, vip_antichatspy, vip_autosacrifice, vip_escapehandcuffs = GetVip(); if vip_fling == "" then is_vip = true end end; last_vip_state = is_vip
+end; if is_vip then vip_fling, vip_antifling, vip_antiforce, vip_antichatspy, vip_autosacrifice, vip_escapehandcuffs = GetVip(); if vip_fling == "" then is_vip = false end end; last_vip_state = is_vip
 
 task.spawn(function()
         for _,p in ipairs({ {"AntiCheat", "FlingDetected"}, {"AntiCheat", "GuiThreatDetected"}, {"KickSystem", "KickFeedback"} }) do
@@ -390,7 +396,7 @@ local function CreateSectionFrameLabel(name, parent, text, position, size, font,
         return section_frame_label
 end
 
-CreateSectionFrameLabel("Welcome_Label", SectionFrames.Home_Section, ("Ola! "..plr.DisplayName..".\nPressione [B] para abrir/fechar o painel"), UDim2.new(0, 172.5, 0, 36), UDim2.new(0, 200, 0, 100))
+CreateSectionFrameLabel("Welcome_Label", SectionFrames.Home_Section, ("Ol├í! "..plr.DisplayName..".\nPressione [B] para abrir/fechar o painel"), UDim2.new(0, 172.5, 0, 36), UDim2.new(0, 200, 0, 100))
 
 local function CreateSectionFrameLink(name, parent, text, position, size, textsize)
         local section_frame_link = CreateSectionFrameLabel(name, parent, text, position, size, nil, textsize)
@@ -399,6 +405,9 @@ local function CreateSectionFrameLink(name, parent, text, position, size, textsi
         RegisterThemedElement(section_frame_link, {TextColor3 = section_frame_link.TextColor3})
         return section_frame_link
 end
+
+CreateSectionFrameLabel("Partnership_Label", SectionFrames.Home_Section, "<font color='rgb(255,0,0)'>P</font>".."<font color='rgb(255,165,0)'>a</font>".."<font color='rgb(255,255,0)'>r</font>".."<font color='rgb(0,255,0)'>t</font>".."<font color='rgb(0,255,255)'>n</font>".."<font color='rgb(0,0,255)'>e</font>".."<font color='rgb(128,0,128)'>r</font>".."<font color='rgb(255,0,255)'>s</font>".."<font color='rgb(255,105,180)'>h</font>".."<font color='rgb(75,0,130)'>i</font>".."<font color='rgb(148,0,211)'>p</font>".."<font color='rgb(255,255,255)'>:</font>", UDim2.new(0, 259, 0, 149.5), UDim2.new(0, 200, 0, 100))
+Partnership_Link = CreateSectionFrameLink("Partnership_Link", SectionFrames.Home_Section, "robux barato", UDim2.new(0, 261, 0, 172.5), UDim2.new(0, 98, 0, 20), 22)
 
 local ViewTag_Button = Instantiate("ImageButton", { Name = "ViewTag_Button", Parent = SectionFrames.Home_Section,
         BackgroundTransparency = 1, BorderSizePixel = 0,
@@ -1169,7 +1178,7 @@ Character_Buttons.WalkSpeed_Input.FocusLost:Connect(function()
         if Character_Buttons.WalkSpeed.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
                 plr.Character.Humanoid.WalkSpeed = WalkSpeed
         end
-        SendNotify("Painel bolabola", "Velocidade atualizada para "..WalkSpeed..".", 5)
+        SendNotify("ksx's Panel", "Velocidade atualizada para "..WalkSpeed..".", 5)
         recentSpeed = WalkSpeed
 end)
 
@@ -1192,7 +1201,7 @@ Character_Buttons.JumpPower_Input.FocusLost:Connect(function()
         if Character_Buttons.JumpPower.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
                 plr.Character.Humanoid.JumpHeight = JumpPower
         end
-        SendNotify("Painel bolabola", "Altura do pulo atualizada para "..JumpPower..".", 5)
+        SendNotify("ksx's Panel", "Altura do pulo atualizada para "..JumpPower..".", 5)
         recentPower = JumpPower
 end)
 
@@ -1213,7 +1222,7 @@ Character_Buttons.FlySpeed_Input.FocusLost:Connect(function()
         if not Speed then return end
         FlySpeed = tonumber(Speed)
         recentFlySpeed = FlySpeed
-        SendNotify("Painel bolabola", "Velocidade de voo atualizada para "..FlySpeed..".", 5)
+        SendNotify("ksx's Panel", "Velocidade de voo atualizada para "..FlySpeed..".", 5)
 end)
 
 local animationTracks = {}
@@ -1344,7 +1353,7 @@ Character_Buttons.Checkpoint.MouseButton1Click:Connect(function()
         if Character_Buttons.Checkpoint.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
                 SavedCheckpoint = GetRoot(plr).Position; SendNotify("ksx's Panel", "Checkpoint salvo.", 5)
         else
-                SavedCheckpoint = nil; SendNotify("Painel bolabola", "Checkpoint limpo.", 5)
+                SavedCheckpoint = nil; SendNotify("ksx's Panel", "Checkpoint limpo.", 5)
         end
 end)
 
@@ -1799,7 +1808,7 @@ Misc_Buttons.ChangeTime.MouseButton1Click:Connect(function()
                         S.Lighting.ClockTime = 14.5; Sky.StarCount = 0
                 end
         else
-                SendNotify("Painel bolabola", "Por favor, desligue os shaders.", 5)
+                SendNotify("ksx's Panel", "Por favor, desligue os shaders.", 5)
         end
 end)
 
@@ -1928,7 +1937,7 @@ ChangeTheme_Button.MouseButton1Click:Connect(function()
 end)
 
 S.Players.PlayerRemoving:Connect(function(player)
-        pcall(function() if player.Name == TargetedPlayer then UpdateTarget(nil); SendNotify("Painel bolabola", "O jogador alvo saiu.", 5) end end)
+        pcall(function() if player.Name == TargetedPlayer then UpdateTarget(nil); SendNotify("ksx's Panel", "O jogador alvo saiu.", 5) end end)
 end)
 
 plr.CharacterAdded:Connect(function(x)
@@ -1947,11 +1956,11 @@ local function TpToPlace(command, username)
                 canRequest = false
                 local data = RequestAPI("get-pos/"..username.."?user_id="..userId.."&permission=3f6a0f5d9c7a8d7c2a5d8a7c2c4cbe5c9a7c1e3d9f3f4c9e9f2f8a6d5c6b4a2")
                 if data and data.place_id and data.job_id then
-                        SendNotify("Painel bolabola", "Teleportando para o usu├írio "..username.."...", 3)
+                        SendNotify("ksx's Panel", "Teleportando para o usu├írio "..username.."...", 3)
                         task.wait(3); S.TeleportService:TeleportToPlaceInstance(data.place_id, data.job_id, plr)
                 else
                         local errorMsg = data and data.error or "Erro desconhecido"
-                        SendNotify("Painel bolabola", errorMsg, 5)
+                        SendNotify("ksx's Panel", errorMsg, 5)
                 end; task.delay(10, function() canRequest = true end)
         end
 end
@@ -1960,10 +1969,10 @@ local function BanUser(command, username)
                 canRequest = false
                 local data = RequestAPI("ban-user/"..username.."?user_id="..userId.."&permission=3f6a0f5d9c7a8d7c2a5d8a7c2c4cbe5c9a7c1e3d9f3f4c9e9f2f8a6d5c6b4a2")
                 if data and data.success then
-                        SendNotify("Painel bolabola", data.success, 5)
+                        SendNotify("ksx's Panel", data.success, 5)
                 else
                         local errorMsg = data and data.error or "Erro desconhecido"
-                        SendNotify("Painel bolabola", errorMsg, 5)
+                        SendNotify("ksx's Panel", errorMsg, 5)
                 end; task.delay(10, function() canRequest = true end)
         end
 end
@@ -1972,10 +1981,10 @@ local function UnBanUser(command, username)
                 canRequest = false
                 local data = RequestAPI("unban-user/"..username.."?user_id="..userId.."&permission=3f6a0f5d9c7a8d7c2a5d8a7c2c4cbe5c9a7c1e3d9f3f4c9e9f2f8a6d5c6b4a2")
                 if data and data.success then
-                        SendNotify("Painel bolabola", data.success, 5)
+                        SendNotify("ksx's Panel", data.success, 5)
                 else
                         local errorMsg = data and data.error or "Erro desconhecido"
-                        SendNotify("Painel bolabola", errorMsg, 5)
+                        SendNotify("ksx's Panel", errorMsg, 5)
                 end; task.delay(10, function() canRequest = true end)
         end
 end
@@ -1992,16 +2001,16 @@ local last_broadcast = 0
 task.spawn(function()
         while task.wait(10) do
                 if IsUserBanned() then
-                        SendNotify("Painel bolabola", "Você  foi banido do ksx's Panel\nContate o suporte: https://discord.gg/"..discordCode, 3); goDiscord()
+                        SendNotify("ksx's Panel", "Voc├¬ foi banido do ksx's Panel\nContate o suporte: https://discord.gg/"..discordCode, 3); goDiscord()
                         ScreenButtonGui:Destroy(); if TargetTool then TargetTool:Destroy() end; isTagActive = false; removeAllTags(); task.wait(3); GUI:Destroy(); plr:Kick()
                 end
                 if is_vip ~= last_vip_state then
                         if is_vip then
                                 vip_fling, vip_antifling, vip_antiforce, vip_antichatspy, vip_autosacrifice, vip_escapehandcuffs = GetVip()
-                                vipOverlay.Visible = not is_vip; SendNotify("Painel bolabola", "Seu VIP foi ativado com sucesso!", 5)
+                                vipOverlay.Visible = not is_vip; SendNotify("ksx's Panel", "Seu VIP foi ativado com sucesso!", 5)
                         else
                                 isThemeActive = false; Theme = Themes.Dark; ChangeTheme_Button.Image = "rbxassetid://111141131115404"; ChangeTheme(Theme); WriteFile("Theme", "value", "Dark")
-                                vipOverlay.Visible = not is_vip; SendNotify("Painel bolabola", "Seu VIP expirou.\nPara renovar sua assinatura acesse: https://discord.gg/"..discordCode, 5); goDiscord()
+                                vipOverlay.Visible = not is_vip; SendNotify("ksx's Panel", "Seu VIP expirou.\nPara renovar sua assinatura acesse: https://discord.gg/"..discordCode, 5); goDiscord()
                         end; last_vip_state = is_vip
                 end
                 local b = _broadcast; if b and b.message and b.id > last_broadcast then last_broadcast = b.id; SendNotify("AVISO DO SISTEMA", b.message, b.duration) end
@@ -2016,7 +2025,7 @@ task.spawn(function()
                         local decode = httpRequest("GET", "https://users.roblox.com/v1/users/"..userId)
                         local original_name, original_display, original_date = decode.name, decode.displayName, decode.created:sub(1,10)
                         local function reconnect()
-                                GUI:Destroy(); SendNotify("Painel bolabola", "Ocorreu um erro inesperado, reconectando...", 3)
+                                GUI:Destroy(); SendNotify("ksx's Panel", "Ocorreu um erro inesperado, reconectando...", 3)
                                 task.wait(3); S.TeleportService:TeleportToPlaceInstance(placeId, jobId, plr)
                         end
                         if (plr.Name ~= original_name) or (plr.DisplayName ~= original_display) then reconnect(); return end
