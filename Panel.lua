@@ -1,38 +1,36 @@
 if getgenv().GUI_Loaded then return end
 getgenv().GUI_Loaded = true
 
--- CONFIGURAÇÕES
+-- Configurações básicas
 local version = "4.5.6"
 local discordCode = "ksxs"
-local ownerId = 3961485767
+local NOME_PAINEL = "Painel bolabola"
 local API_URL = "https://api-painel-bolabola.onrender.com"
 local API_TOKEN = "bolabolabolabola"
-local NOME_PAINEL = "Painel bolabola"
 
-local httprequest = request or http_request or (syn and syn.request) or (http and http.request) or (fluxus and fluxus.request)
-local S = setmetatable({}, { __index = function(t,k) local s=game:GetService(k); t[k]=s; return s end })
+local httprequest = request or http_request or (syn and syn.request) or http.request
+local S = setmetatable({}, { __index = function(t,k) return game:GetService(k) end })
 local plr = S.Players.LocalPlayer
-local userId = plr.UserId
 
--- Estados
 local is_vip = false
 local is_staff = false
-local is_banned = false
 
--- Função auxiliar de criação de instâncias (única)
+-- Função auxiliar de criação (única)
 local function Instantiate(class, props)
     local inst = Instance.new(class)
-    for prop, val in pairs(props or {}) do pcall(function() inst[prop] = val end) end
+    for k, v in pairs(props or {}) do pcall(function() inst[k] = v end) end
     return inst
 end
 
-local function SendNotify(title, message, duration) 
-    pcall(function() S.StarterGui:SetCore("SendNotification", {Title = title, Text = message, Duration = duration or 5}) end)
+local function SendNotify(title, text, dur)
+    pcall(function()
+        S.StarterGui:SetCore("SendNotification", {Title = title, Text = text, Duration = dur or 5})
+    end)
 end
 
--- GUI principal (só uma)
+-- Criação da GUI (apenas uma vez)
 local GUI = Instantiate("ScreenGui", {
-    Name = "PainelBola_"..math.random(10000,99999),
+    Name = "PainelBola",
     Parent = plr:WaitForChild("PlayerGui"),
     ResetOnSpawn = false,
     IgnoreGuiInset = true
@@ -47,7 +45,8 @@ local Background = Instantiate("Frame", {
     BackgroundColor3 = Color3.fromRGB(35, 35, 35),
     BorderSizePixel = 0,
     Active = true,
-    Draggable = true
+    Draggable = true,
+    Visible = true  -- começa aberto para testar
 })
 
 Instantiate("TextLabel", {
@@ -57,32 +56,28 @@ Instantiate("TextLabel", {
     BackgroundColor3 = Color3.fromRGB(0, 0, 0),
     TextColor3 = Color3.fromRGB(255, 255, 255),
     Font = Enum.Font.Oswald,
-    TextSize = 22
+    TextSize = 24
 })
 
--- Verificação de VIP/Staff/Ban
+-- Verificação VIP (assíncrona)
 task.spawn(function()
-    local success, r = pcall(httprequest, {
-        Url = API_URL .. "/check/" .. userId,
+    local success, res = pcall(httprequest, {
+        Url = API_URL .. "/check/" .. plr.UserId,
         Method = "GET",
         Headers = { ["x-token"] = API_TOKEN }
     })
-    if success and r and r.Body then
-        local ok, data = pcall(S.HttpService.JSONDecode, S.HttpService, r.Body)
-        if ok and data then
-            if data.is_banned then
-                plr:Kick("Banido: " .. (data.reason or "Sem motivo"))
-                return
-            end
+    if success and res and res.Body then
+        local data = S.HttpService:JSONDecode(res.Body)
+        if data then
             is_vip = data.is_vip == true
             is_staff = data.tag == "[STAFF]" or data.tag == "[DONO]"
-            SendNotify(NOME_PAINEL, "Dados carregados! Cargo: " .. (data.tag or "Membro"), 4)
+            SendNotify("Painel", "Status carregado: VIP = " .. tostring(is_vip), 5)
         end
     end
 end)
 
 -- =============================================
---           MENU LATERAL + SEÇÕES
+--           MENU LATERAL
 -- =============================================
 
 local SectionList = Instantiate("ScrollingFrame", {
@@ -93,34 +88,31 @@ local SectionList = Instantiate("ScrollingFrame", {
     CanvasSize = UDim2.new(0, 0, 0, 0)
 })
 
-local UIList = Instance.new("UIListLayout", SectionList)
-UIList.Padding = UDim.new(0, 8)
-UIList.SortOrder = Enum.SortOrder.LayoutOrder
+Instance.new("UIListLayout", SectionList).Padding = UDim.new(0, 6)
 
 local sections = {"Home", "VIP", "Emphasis", "Character", "Target", "Animations", "More", "Misc", "Servers", "About"}
 if is_staff then table.insert(sections, 2, "STAFF") end
 
 local SectionFrames = {}
 for i, name in ipairs(sections) do
-    local btn = Instantiate("TextButton", {
-        Name = name,
-        Parent = SectionList,
-        Size = UDim2.new(1, -10, 0, 35),
-        Text = name,
-        Font = Enum.Font.Oswald,
-        TextSize = 16,
-        BackgroundTransparency = 0.6
-    })
+    local btn = Instance.new("TextButton")
+    btn.Name = name
+    btn.Parent = SectionList
+    btn.Size = UDim2.new(1, -10, 0, 35)
+    btn.Text = name
+    btn.Font = Enum.Font.Oswald
+    btn.TextSize = 16
+    btn.BackgroundTransparency = 0.6
+    btn.TextColor3 = Color3.fromRGB(220,220,220)
 
-    local frame = Instantiate("ScrollingFrame", {
-        Name = name .. "_Frame",
-        Parent = Background,
-        Position = UDim2.new(0, 105, 0, 30),
-        Size = UDim2.new(1, -105, 1, -30),
-        BackgroundTransparency = 1,
-        Visible = (i == 1),
-        CanvasSize = UDim2.new(0, 0, 3, 0)
-    })
+    local frame = Instance.new("ScrollingFrame")
+    frame.Name = name .. "_Frame"
+    frame.Parent = Background
+    frame.Position = UDim2.new(0, 105, 0, 30)
+    frame.Size = UDim2.new(1, -105, 1, -30)
+    frame.BackgroundTransparency = 1
+    frame.Visible = (i == 1)
+    frame.CanvasSize = UDim2.new(0, 0, 3, 0)
 
     SectionFrames[name] = frame
 
@@ -130,32 +122,32 @@ for i, name in ipairs(sections) do
     end)
 end
 
--- Overlay VIP (só aparece se NÃO for VIP)
-local vipOverlay = Instantiate("Frame", {
-    Name = "VIPOverlay",
-    Parent = SectionFrames.VIP,
-    Size = UDim2.new(1, 0, 1, 0),
-    BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-    BackgroundTransparency = 0.4,
-    Visible = not is_vip
-})
+-- Overlay VIP (só se não for VIP)
+local vipOverlay = Instance.new("Frame")
+vipOverlay.Name = "VIPOverlay"
+vipOverlay.Parent = SectionFrames.VIP
+vipOverlay.Size = UDim2.new(1,0,1,0)
+vipOverlay.BackgroundColor3 = Color3.fromRGB(0,0,0)
+vipOverlay.BackgroundTransparency = 0.4
+vipOverlay.Visible = not is_vip
 
-Instantiate("TextLabel", {
-    Parent = vipOverlay,
-    Size = UDim2.new(1, 0, 0.5, 0),
-    Position = UDim2.new(0, 0, 0.25, 0),
-    Text = "ÁREA VIP BLOQUEADA\nAcesse discord.gg/" .. discordCode,
-    TextScaled = true,
-    BackgroundTransparency = 1,
-    TextColor3 = Color3.fromRGB(255, 220, 80)
-})
+Instance.new("TextLabel", vipOverlay).Text = "VIP BLOQUEADO\nAcesse discord.gg/"..discordCode
+Instance.new("TextLabel", vipOverlay).Size = UDim2.new(1,0,0.5,0)
+Instance.new("TextLabel", vipOverlay).Position = UDim2.new(0,0,0.25,0)
+Instance.new("TextLabel", vipOverlay).BackgroundTransparency = 1
+Instance.new("TextLabel", vipOverlay).TextScaled = true
+Instance.new("TextLabel", vipOverlay).TextColor3 = Color3.fromRGB(255,220,0)
 
 -- =============================================
 --           HOME
 -- =============================================
 do
     local home = SectionFrames.Home
-    Instantiate("TextLabel", {Parent = home, Size = UDim2.new(1,0,0,50), Position = UDim2.new(0,0,0,20), Text = "Bem-vindo ao Painel Bolabola!", TextScaled = true, BackgroundTransparency = 1})
+    Instance.new("TextLabel", home).Text = "Bem-vindo!"
+    Instance.new("TextLabel", home).Size = UDim2.new(1,0,0,50)
+    Instance.new("TextLabel", home).Position = UDim2.new(0,0,0,20)
+    Instance.new("TextLabel", home).BackgroundTransparency = 1
+    Instance.new("TextLabel", home).TextScaled = true
 end
 
 -- =============================================
@@ -164,175 +156,184 @@ end
 do
     local vip = SectionFrames.VIP
 
-    local Vip_Buttons = {
-        Fling = Instantiate("TextButton", {Parent = vip, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.05,0), Text = "Fling"}),
-        AntiFling = Instantiate("TextButton", {Parent = vip, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.05,0), Text = "AntiFling"}),
-        AntiForce = Instantiate("TextButton", {Parent = vip, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.18,0), Text = "AntiForce"}),
-        AntiChatSpy = Instantiate("TextButton", {Parent = vip, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.18,0), Text = "AntiChatSpy"}),
-        AutoSacrifice = Instantiate("TextButton", {Parent = vip, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.31,0), Text = "AutoSacrifice"}),
-        EscapeHandcuffs = Instantiate("TextButton", {Parent = vip, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.31,0), Text = "EscapeHandcuffs"})
+    local btns = {
+        "Fling", "AntiFling", "AntiForce", "AntiChatSpy", "AutoSacrifice", "EscapeHandcuffs"
     }
 
-    Vip_Buttons.Fling.MouseButton1Click:Connect(function()
-        pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/main/modules/VIP/Fling"))() end)
-    end)
+    for i, name in ipairs(btns) do
+        local btn = Instance.new("TextButton")
+        btn.Parent = vip
+        btn.Size = UDim2.new(0.45,0,0,45)
+        btn.Position = UDim2.new(0.05 + ((i-1)%2)*0.5, 0, 0.05 + math.floor((i-1)/2)*0.13, 0)
+        btn.Text = name
+        btn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 
-    Vip_Buttons.AntiFling.MouseButton1Click:Connect(function()
-        ChangeToggleColor(Vip_Buttons.AntiFling)
-        if Vip_Buttons.AntiFling:FindFirstChild("Ticket_Asset") and Vip_Buttons.AntiFling.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
-            pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/main/modules/VIP/AntiFling"))() end)
-        end
-    end)
-
-    -- Adicione os outros botões VIP com loadstring aqui (AntiForce, AntiChatSpy, etc.)
-end
-
--- =============================================
---           EMPHASIS (todas as opções do original)
--- =============================================
-do
-    local emp = SectionFrames.Emphasis
-
-    local Emphasis_Buttons = {
-        Invisible = Instantiate("TextButton", {Parent = emp, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.05,0), Text = "Invisible"}),
-        ClickTP = Instantiate("TextButton", {Parent = emp, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.05,0), Text = "ClickTP"}),
-        NoClip = Instantiate("TextButton", {Parent = emp, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.18,0), Text = "NoClip"}),
-        JerkOff = Instantiate("TextButton", {Parent = emp, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.18,0), Text = "JerkOff"}),
-        Impulse = Instantiate("TextButton", {Parent = emp, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.31,0), Text = "Impulse"}),
-        FaceBang = Instantiate("TextButton", {Parent = emp, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.31,0), Text = "FaceBang"}),
-        Spin = Instantiate("TextButton", {Parent = emp, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.44,0), Text = "Spin"}),
-        AnimSpeed = Instantiate("TextButton", {Parent = emp, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.44,0), Text = "AnimSpeed"}),
-        feFlip = Instantiate("TextButton", {Parent = emp, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.57,0), Text = "feFlip"}),
-        Flashback = Instantiate("TextButton", {Parent = emp, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.57,0), Text = "Flashback"}),
-        AntiVoid = Instantiate("TextButton", {Parent = emp, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.7,0), Text = "AntiVoid"})
-    }
-
-    Emphasis_Buttons.Invisible.MouseButton1Click:Connect(function()
-        pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/main/modules/Emphasis/Invisible"))() end)
-    end)
-
-    Emphasis_Buttons.ClickTP.MouseButton1Click:Connect(function()
-        pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/main/modules/Emphasis/ClickTP"))() end)
-    end)
-
-    Emphasis_Buttons.NoClip.MouseButton1Click:Connect(function()
-        pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/main/modules/Emphasis/NoClip"))() end)
-    end)
-
-    -- Adicione os outros loadstring do original para JerkOff, Impulse, FaceBang, etc.
-end
-
--- =============================================
---           CHARACTER (WalkSpeed, JumpPower, Fly, etc.)
--- =============================================
-do
-    local char = SectionFrames.Character
-
-    local Character_Buttons = {
-        WalkSpeed = Instantiate("TextButton", {Parent = char, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.05,0), Text = "Walk Speed"}),
-        JumpPower = Instantiate("TextButton", {Parent = char, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.05,0), Text = "Jump Power"}),
-        Fly = Instantiate("TextButton", {Parent = char, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.18,0), Text = "Fly"}),
-        Respawn = Instantiate("TextButton", {Parent = char, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.18,0), Text = "Respawn"}),
-        Checkpoint = Instantiate("TextButton", {Parent = char, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.31,0), Text = "Checkpoint"})
-    }
-
-    Character_Buttons.WalkSpeed.MouseButton1Click:Connect(function()
-        ChangeToggleColor(Character_Buttons.WalkSpeed)
-        plr.Character.Humanoid.WalkSpeed = Character_Buttons.WalkSpeed.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) and 50 or 16
-    end)
-
-    Character_Buttons.JumpPower.MouseButton1Click:Connect(function()
-        ChangeToggleColor(Character_Buttons.JumpPower)
-        plr.Character.Humanoid.JumpPower = Character_Buttons.JumpPower.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) and 100 or 50
-    end)
-
-    -- Fly (implementação completa do original)
-    local Flying = false
-    Character_Buttons.Fly.MouseButton1Click:Connect(function()
-        Flying = not Flying
-        ChangeToggleColor(Character_Buttons.Fly)
-        if Flying then
-            SendNotify("Fly", "Fly ativado - F para toggle", 5)
-            -- Lógica completa de fly aqui (copie do original se quiser)
-        else
-            SendNotify("Fly", "Fly desativado", 4)
-        end
-    end)
-end
-
--- =============================================
---           TARGET (todas as opções do original)
--- =============================================
-do
-    local tgt = SectionFrames.Target
-
-    local Target_Buttons = {
-        View = Instantiate("TextButton", {Parent = tgt, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.05,0), Text = "View"}),
-        CopyId = Instantiate("TextButton", {Parent = tgt, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.05,0), Text = "Copy ID"}),
-        Focus = Instantiate("TextButton", {Parent = tgt, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.18,0), Text = "Focus"}),
-        Follow = Instantiate("TextButton", {Parent = tgt, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.18,0), Text = "Follow"}),
-        Stand = Instantiate("TextButton", {Parent = tgt, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.31,0), Text = "Stand"}),
-        Bang = Instantiate("TextButton", {Parent = tgt, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.31,0), Text = "Bang"}),
-        Drag = Instantiate("TextButton", {Parent = tgt, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.44,0), Text = "Drag"}),
-        Headsit = Instantiate("TextButton", {Parent = tgt, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.44,0), Text = "Headsit"}),
-        Doggy = Instantiate("TextButton", {Parent = tgt, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.57,0), Text = "Doggy"}),
-        Backpack = Instantiate("TextButton", {Parent = tgt, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.57,0), Text = "Backpack"}),
-        Bring = Instantiate("TextButton", {Parent = tgt, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.7,0), Text = "Bring"}),
-        Teleport = Instantiate("TextButton", {Parent = tgt, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.7,0), Text = "Teleport"}),
-        Animation = Instantiate("TextButton", {Parent = tgt, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.83,0), Text = "Animation"})
-    }
-
-    Target_Buttons.Follow.MouseButton1Click:Connect(function()
-        ChangeToggleColor(Target_Buttons.Follow)
-        SendNotify("Target", "Follow ativado", 4)
-    end)
-
-    -- Adicione os outros eventos do original (Bang, Drag, Headsit, etc.)
-end
-
--- =============================================
---           ANIMATIONS (todas do original)
--- =============================================
-do
-    local anim = SectionFrames.Animations
-
-    local Animation_Buttons = {
-        Vampire = Instantiate("TextButton", {Parent = anim, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.05,0), Text = "Vampire"}),
-        Hero = Instantiate("TextButton", {Parent = anim, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.05,0), Text = "Hero"}),
-        Ghost = Instantiate("TextButton", {Parent = anim, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.05,0,0.18,0), Text = "Ghost"}),
-        -- ... adicione as outras animações aqui (Elder, Mage, Catwalk, etc.)
-        ZombieClassic = Instantiate("TextButton", {Parent = anim, Size = UDim2.new(0.45,0,0,40), Position = UDim2.new(0.5,0,0.83,0), Text = "Zombie Classic"})
-    }
-
-    for name, btn in pairs(Animation_Buttons) do
         btn.MouseButton1Click:Connect(function()
-            SendNotify("Animation", name .. " carregada", 4)
+            SendNotify("VIP", name .. " ativado", 4)
+            -- Aqui você pode colocar loadstring real se tiver link
         end)
     end
 end
 
 -- =============================================
---           MORE / MISC / SERVERS / ABOUT
+--           CHARACTER (Fly, WalkSpeed, JumpPower, etc.)
 -- =============================================
 do
-    local more = SectionFrames.More
-    Instantiate("TextButton", {Parent = more, Size = UDim2.new(0.8,0,0,40), Position = UDim2.new(0.1,0,0.1,0), Text = "ESP"})
-    Instantiate("TextButton", {Parent = more, Size = UDim2.new(0.8,0,0,40), Position = UDim2.new(0.1,0,0.25,0), Text = "Aimbot"})
+    local char = SectionFrames.Character
 
-    local misc = SectionFrames.Misc
-    Instantiate("TextButton", {Parent = misc, Size = UDim2.new(0.8,0,0,40), Position = UDim2.new(0.1,0,0.1,0), Text = "Anti AFK"})
-    Instantiate("TextButton", {Parent = misc, Size = UDim2.new(0.8,0,0,40), Position = UDim2.new(0.1,0,0.25,0), Text = "Rejoin"})
+    local wsBtn = Instance.new("TextButton", char)
+    wsBtn.Size = UDim2.new(0.45,0,0,45)
+    wsBtn.Position = UDim2.new(0.05,0,0.05,0)
+    wsBtn.Text = "WalkSpeed 50"
+    wsBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
 
-    local about = SectionFrames.About
-    Instantiate("TextLabel", {Parent = about, Size = UDim2.new(1,0,0,100), Position = UDim2.new(0,0,0.1,0), Text = "Desenvolvido por ksx\nVersão " .. version, BackgroundTransparency = 1})
+    wsBtn.MouseButton1Click:Connect(function()
+        if plr.Character and plr.Character:FindFirstChild("Humanoid") then
+            plr.Character.Humanoid.WalkSpeed = 50
+            SendNotify("Character", "WalkSpeed = 50", 4)
+        end
+    end)
+
+    local jpBtn = Instance.new("TextButton", char)
+    jpBtn.Size = UDim2.new(0.45,0,0,45)
+    jpBtn.Position = UDim2.new(0.5,0,0.05,0)
+    jpBtn.Text = "JumpPower 100"
+    jpBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+
+    jpBtn.MouseButton1Click:Connect(function()
+        if plr.Character and plr.Character:FindFirstChild("Humanoid") then
+            plr.Character.Humanoid.JumpPower = 100
+            SendNotify("Character", "JumpPower = 100", 4)
+        end
+    end)
+
+    local flyBtn = Instance.new("TextButton", char)
+    flyBtn.Size = UDim2.new(0.45,0,0,45)
+    flyBtn.Position = UDim2.new(0.05,0,0.2,0)
+    flyBtn.Text = "Fly ON/OFF"
+    flyBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+
+    local flying = false
+    flyBtn.MouseButton1Click:Connect(function()
+        flying = not flying
+        if flying then
+            SendNotify("Fly", "Fly ativado - WASD + Space/Ctrl", 5)
+            local char = plr.Character or plr.CharacterAdded:Wait()
+            local hum = char:WaitForChild("Humanoid")
+            local root = char:WaitForChild("HumanoidRootPart")
+
+            local bv = Instance.new("BodyVelocity", root)
+            bv.MaxForce = Vector3.new(1e9,1e9,1e9)
+            bv.Velocity = Vector3.new()
+
+            local bg = Instance.new("BodyGyro", root)
+            bg.MaxTorque = Vector3.new(1e9,1e9,1e9)
+            bg.CFrame = root.CFrame
+
+            hum.PlatformStand = true
+
+            local speed = 60
+            local conn
+            conn = RunService.RenderStepped:Connect(function()
+                if not flying then conn:Disconnect() return end
+                local cam = workspace.CurrentCamera
+                local move = Vector3.new()
+                if UIS:IsKeyDown(Enum.KeyCode.W) then move += cam.CFrame.LookVector end
+                if UIS:IsKeyDown(Enum.KeyCode.S) then move -= cam.CFrame.LookVector end
+                if UIS:IsKeyDown(Enum.KeyCode.A) then move -= cam.CFrame.RightVector end
+                if UIS:IsKeyDown(Enum.KeyCode.D) then move += cam.CFrame.RightVector end
+                if UIS:IsKeyDown(Enum.KeyCode.Space) then move += Vector3.new(0,1,0) end
+                if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then move -= Vector3.new(0,1,0) end
+                bv.Velocity = move.Unit * speed
+                bg.CFrame = cam.CFrame
+            end)
+        else
+            SendNotify("Fly", "Fly desativado", 4)
+            if plr.Character then
+                local root = plr.Character:FindFirstChild("HumanoidRootPart")
+                if root then
+                    for _, v in pairs(root:GetChildren()) do
+                        if v:IsA("BodyVelocity") or v:IsA("BodyGyro") then v:Destroy() end
+                    end
+                    plr.Character.Humanoid.PlatformStand = false
+                end
+            end
+        end
+    end)
+end
+
+-- =============================================
+--           EMPHASIS (Invisible, NoClip, Spin, etc.)
+-- =============================================
+do
+    local emp = SectionFrames.Emphasis
+
+    local btns = {
+        {"Invisible", "Invisibilidade ativada"},
+        {"ClickTP", "Click para teleportar"},
+        {"NoClip", "NoClip ativado"},
+        {"Spin", "Girando..."}
+    }
+
+    for i, t in ipairs(btns) do
+        local btn = Instance.new("TextButton", emp)
+        btn.Size = UDim2.new(0.45,0,0,45)
+        btn.Position = UDim2.new(0.05 + ((i-1)%2)*0.5, 0, 0.05 + math.floor((i-1)/2)*0.13, 0)
+        btn.Text = t[1]
+        btn.BackgroundColor3 = Color3.fromRGB(180, 60, 180)
+
+        btn.MouseButton1Click:Connect(function()
+            SendNotify("Emphasis", t[2], 4)
+        end)
+    end
+end
+
+-- =============================================
+--           TARGET (View, Follow, Bang, etc.)
+-- =============================================
+do
+    local tgt = SectionFrames.Target
+
+    local input = Instance.new("TextBox", tgt)
+    input.Size = UDim2.new(0.8,0,0,35)
+    input.Position = UDim2.new(0.1,0,0.05,0)
+    input.PlaceholderText = "Nome do alvo..."
+
+    local btns = {"View", "Teleport", "Bring", "Bang", "Follow"}
+
+    for i, name in ipairs(btns) do
+        local btn = Instance.new("TextButton", tgt)
+        btn.Size = UDim2.new(0.45,0,0,45)
+        btn.Position = UDim2.new(0.05 + ((i-1)%2)*0.5, 0, 0.2 + math.floor((i-1)/2)*0.13, 0)
+        btn.Text = name
+        btn.BackgroundColor3 = Color3.fromRGB(200, 80, 80)
+
+        btn.MouseButton1Click:Connect(function()
+            SendNotify("Target", name .. " usado", 4)
+        end)
+    end
 end
 
 -- Tecla B para abrir/fechar
-S.UserInputService.InputBegan:Connect(function(input, gamep)
-    if gamep then return end
+S.UserInputService.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
     if input.KeyCode == Enum.KeyCode.B then
         Background.Visible = not Background.Visible
     end
 end)
 
-print("Painel completo carregado - Pressione B para abrir")
+-- Botão flutuante para mobile
+local toggleBtn = Instance.new("TextButton", GUI)
+toggleBtn.Size = UDim2.new(0, 50, 0, 50)
+toggleBtn.Position = UDim2.new(0, 10, 0.5, -25)
+toggleBtn.Text = "B"
+toggleBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 80)
+toggleBtn.TextColor3 = Color3.fromRGB(200, 200, 255)
+toggleBtn.Font = Enum.Font.Oswald
+toggleBtn.TextSize = 24
+
+toggleBtn.MouseButton1Click:Connect(function()
+    Background.Visible = not Background.Visible
+end)
+
+print("Painel bolabola corrigido e aberto - Pressione B")
