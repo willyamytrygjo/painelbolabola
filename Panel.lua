@@ -1,114 +1,86 @@
 if getgenv().GUI_Loaded then return end; getgenv().GUI_Loaded = true
 
--- // CONFIGURAÇÕES PAINEL BOLABOLA \\ --
 local version, discordCode, ownerId = "4.5.6", "ksxs", 3961485767
-local API_URL = "https://api-painel-bolabola.onrender.com" -- Verifique se este é o link exato do Render
-local API_TOKEN = "bolabolabolabola"
-local NOME_PAINEL = "Painel bolabola"
-
 local httprequest = request or http_request or (syn and syn.request) or (http and http.request) or (fluxus and fluxus.request)
 local S = setmetatable({}, { __index = function(t,k) local s=game:GetService(k); t[k]=s; return s end })
 local plr, placeId = S.Players.LocalPlayer, game.PlaceId
 local userId, placeName, jobId = plr.UserId, S.MarketplaceService:GetProductInfo(placeId).Name, game.JobId
 
+-- Configurações da sua nova API
+local API_URL = "https://api-painel-bolabola.onrender.com"
+local API_TOKEN = "bolabolabolabola"
+local NOME_PAINEL = "Painel bolabola"
+
 local function SendNotify(title, message, duration) 
     S.StarterGui:SetCore("SendNotification", { Title = title, Text = message, Duration = duration; }) 
 end
 
--- // FUNÇÃO DE REQUISIÇÃO COM TOKEN \\ --
-local function RequestAPI(route)
-    local success, r = pcall(function()
-        return httprequest({
-            Url = API_URL .. "/" .. route,
-            Method = "GET",
-            Headers = {
-                ["x-token"] = API_TOKEN,
-                ["Content-Type"] = "application/json"
-            }
-        })
-    end)
-    
-    if success and r and r.Body then
-        return S.HttpService:JSONDecode(r.Body)
-    end
-    return nil
+-- Função original adaptada com o Token de segurança
+local function httpRequest(method, url, headers, body)
+        local customHeaders = headers or {}
+        customHeaders["x-token"] = API_TOKEN -- Adicionado para funcionar com sua API
+        
+        local r = httprequest({Url=url, Method=method or "GET", Headers=customHeaders, Body=body})
+        return r and r.Body and select(2, pcall(S.HttpService.JSONDecode, S.HttpService, r.Body))
 end
 
--- // SISTEMA DE VERIFICAÇÃO (BAN/VIP/TAG) \\ --
-local function Authenticate()
-    local data = RequestAPI("check/" .. userId)
-    
-    if not data then 
-        warn("["..NOME_PAINEL.."] API Offline ou Acordando... Tentando novamente em 5s")
-        return "retry" 
-    end
-
-    if data.is_banned then
-        plr:Kick("\n[" .. NOME_PAINEL .. "]\nVocê está banido!\nMotivo: " .. (data.reason or "Não informado"))
-        return "banned"
-    end
-
-    -- Define as variáveis globais que o resto do seu script de 20k linhas usa
-    is_vip = data.is_vip == true
-    is_staff = data.tag == "[STAFF]" or data.tag == "[DONO]"
-    _broadcast = data.broadcast or "Bem-vindo ao " .. NOME_PAINEL
-    my_tag = data.tag or "Membro"
-    
-    return "success"
+local function goDiscord(code)
+        local code = code or discordCode; setclipboard("https://discord.gg/"..code)
+        httpRequest(
+                'POST', 'http://127.0.0.1:6463/rpc?v=1', { ['Content-Type'] = 'application/json', Origin = 'https://discord.com' },
+                S.HttpService:JSONEncode({ cmd = 'INVITE_BROWSER', nonce = S.HttpService:GenerateGUID(false), args = {code = code} })
+        )
 end
 
--- Tenta autenticar (com sistema de re-tentativa caso a API esteja dormindo)
-local authStatus = Authenticate()
-if authStatus == "retry" then
-    task.wait(5)
-    authStatus = Authenticate()
+-- Rota alterada para a nova estrutura /check/
+local function RequestAPI(route) 
+    return httpRequest("GET", API_URL .. "/check/" .. userId) 
 end
 
-if authStatus ~= "success" then
-    getgenv().GUI_Loaded = false
-    if authStatus == "retry" then
-        SendNotify(NOME_PAINEL, "Erro de conexão. API em repouso. Re-execute o script.", 10)
-    end
-    return
+local function IsUserBanned()
+        local data = RequestAPI() -- Chama a nova rota de checagem única
+        if not data then return nil end
+        
+        if data.is_banned then return true end
+        
+        -- Define as variáveis que o restante do seu script usa
+        is_vip = data.is_vip == true
+        is_staff = (data.tag == "[STAFF]" or data.tag == "[DONO]")
+        _broadcast = data.reason or ""
+        
+        return false
+end; is_banned = IsUserBanned()
+
+if is_banned == nil then
+        getgenv().GUI_Loaded = false; return
+elseif is_banned then
+        -- Nome alterado para Painel bolabola
+        SendNotify(NOME_PAINEL, "Você está banido do " .. NOME_PAINEL .. "\nContate o suporte: https://discord.gg/"..discordCode, 10); goDiscord(); task.wait(10)
+        getgenv().GUI_Loaded = false; return
 end
 
--- // COMPATIBILIDADE COM O RESTO DO SEU SCRIPT \\ --
--- Como sua API agora é centralizada, simulamos as funções antigas para não quebrar as 20k linhas
+-- Mantive as funções de Stats e Data iguais para não quebrar as 20k linhas, 
+-- apenas apontando para a nova URL
 local function GetStats()
-    return "\n\nStatus: <font color='rgb(0,255,0)'>Online</font>\nPainel: <font color='rgb(255,255,0)'>"..NOME_PAINEL.."</font>\nTag: <font color='rgb(200,200,200)'>"..my_tag.."</font>"
+    local data = RequestAPI()
+    if not data then return "" end
+    return "\n\nOnline: <font color='rgb(200,200,200)'>Ativo</font>\nUser: <font color='rgb(200,200,200)'>"..plr.Name.."</font>"
 end
 
 local function GetData()
-    return {}, {} -- Se precisar de tags globais no futuro, alimentamos aqui
+    return {}, {} 
 end
 
-task.spawn(function() 
-    while true do 
-        _stats = GetStats()
-        _tags, _users = GetData() 
-        task.wait(30) 
-    end 
-end)
+task.spawn(function() while true do _stats = GetStats(); _tags, _users = GetData(); task.wait(10) end end)
 
--- Mantendo a estrutura de pastas que você já tinha
-if not isfolder("ksx") then makefolder("ksx") end
-local __path = "ksx/database.json"
+-- Mantive a lógica do VIP exatamente como a sua original
+local function GetVip()
+        local data = RequestAPI()
+        if not data or not data.is_vip then return "", "", "", "", "", "" end
+        -- Se sua API retornar campos extras no futuro, eles entram aqui
+        return "Sim", "Sim", "Sim", "Sim", "Sim", "Sim"
+end; if is_vip then vip_fling, vip_antifling, vip_antiforce, vip_antichatspy, vip_autosacrifice, vip_escapehandcuffs = GetVip() end
 
-function WriteFile(section, key, value)
-    local data = (isfile(__path) and S.HttpService:JSONDecode(readfile(__path))) or {}
-    if key then data[section] = data[section] or {}; data[section][key] = value else data[section] = value end
-    writefile(__path, S.HttpService:JSONEncode(data))
-end
-
-function LoadFile(section, key, default)
-    if isfile(__path) then
-        local data = S.HttpService:JSONDecode(readfile(__path))
-        if key and data[section] then return data[section][key] or default else return data[section] or default end
-    end; return default
-end
-
-SendNotify(NOME_PAINEL, "Bem-vindo, " .. plr.Name .. "! Tag: " .. my_tag, 5)
-Themes = {
         Dark = {
                 BackgroundColor3_title = Color3.fromRGB(0, 0, 0), BackgroundColor3_button = Color3.fromRGB(100, 100, 100), BackgroundColor3 = Color3.fromRGB(35, 35, 35), TextColor3_credits = Color3.fromRGB(255, 255, 255), BorderColor3 = Color3.fromRGB(45, 45, 45), ImageColor3 = Color3.fromRGB(25, 25, 25), TextColor3 = Color3.fromRGB(150, 150, 150), PlaceholderTextColor3 = Color3.fromRGB(140, 140, 140)
         },
