@@ -1,4 +1,3 @@
-
 local version, discordCode, ownerId = "4.5.6", "ksxs", 3961485767
 local httprequest = request or http_request or (syn and syn.request) or (http and http.request) or (fluxus and fluxus.request)
 local S = setmetatable({}, { __index = function(t,k) local s=game:GetService(k); t[k]=s; return s end })
@@ -26,10 +25,9 @@ end; is_banned = IsUserBanned()
 if is_banned == nil then
 getgenv().GUI_Loaded = false; return
 elseif is_banned then
-SendNotify("painel bolabola", "Voc├¬ est├í banido do painel bolabola\nContate o suporte: https://discord.gg/"..discordCode, 10); goDiscord(); task.wait(10)
+SendNotify("painel bolabola", "Você está banido do painel bolabola\nContate o suporte: https://discord.gg/"..discordCode, 10); goDiscord(); task.wait(10)
 getgenv().GUI_Loaded = false; return
 end
-is_vip = true
 local function GetPing() return math.floor(S.Stats.Network.ServerStatsItem["Data Ping"]:GetValue()) end
 local function GetStats()
 local data = RequestAPI("get-stats")
@@ -99,8 +97,8 @@ BackgroundColor3_title = Color3.fromRGB(0, 70, 90), BackgroundColor3_button = Co
 Cyber = {
 BackgroundColor3_title = Color3.fromRGB(40, 0, 60), BackgroundColor3_button = Color3.fromRGB(0, 200, 255), BackgroundColor3 = Color3.fromRGB(20, 0, 40), TextColor3_credits = Color3.fromRGB(200, 255, 255), BorderColor3 = Color3.fromRGB(0, 150, 200), ImageColor3 = Color3.fromRGB(15, 0, 25), TextColor3 = Color3.fromRGB(180, 255, 255), PlaceholderTextColor3 = Color3.fromRGB(150, 230, 230)
 },
-}; savedTheme = LoadFile("Theme", "value", "Dark"); Theme = Themes[savedTheme] or Themes.Dark
-if not is_vip and savedTheme ~= "Dark" and savedTheme ~= "Light" then Theme = Themes.Dark; WriteFile("Theme", "value", "Dark") end
+}; savedTheme = "Dark"; Theme = Themes[savedTheme] or Themes.Dark
+if not is_vip and savedTheme ~= "Dark" and savedTheme ~= "Light" then Theme = Themes.Dark; end
 local ThemedElements = {}
 local function RegisterThemedElement(instance, properties)
 ThemedElements[instance] = properties
@@ -342,7 +340,7 @@ RichText = true, AutoLocalize = false
 }); RegisterThemedElement(section_frame_label, {BackgroundColor3 = "BackgroundColor3", BorderColor3 = "BorderColor3", TextColor3 = "TextColor3"})
 return section_frame_label
 end
-CreateSectionFrameLabel("Welcome_Label", SectionFrames.Home_Section, ("Ol├í! "..plr.DisplayName..".\nPressione [B] para abrir/fechar o painel"), UDim2.new(0, 172.5, 0, 36), UDim2.new(0, 200, 0, 100))
+CreateSectionFrameLabel("Welcome_Label", SectionFrames.Home_Section, ("Olá! "..plr.DisplayName..".\nPressione [B] para abrir/fechar o painel"), UDim2.new(0, 172.5, 0, 36), UDim2.new(0, 200, 0, 100))
 local function CreateSectionFrameLink(name, parent, text, position, size, textsize)
 local section_frame_link = CreateSectionFrameLabel(name, parent, text, position, size, nil, textsize)
 section_frame_link.Active = true
@@ -405,7 +403,7 @@ Image = "rbxassetid://112456487988886"
 local themeIndex, vipThemes = 0, { "Slate", "Blue", "Pink", "Violet", "Ruby", "Gold", "Sand", "Ocean", "Cyber" }
 ChangeVipTheme_Button.MouseButton1Click:Connect(function()
 themeIndex += 1; if themeIndex > #vipThemes then themeIndex = 1 end
-local key = vipThemes[themeIndex]; Theme = Themes[key]; ChangeTheme(Theme); WriteFile("Theme", "value", key)
+local key = vipThemes[themeIndex]; Theme = Themes[key]; ChangeTheme(Theme); -- WriteFile removido
 end)
 local vipOverlay = Instantiate("ImageButton", { Name = "VIPOverlay", Parent = SectionFrames.Vip_Section,
 BackgroundTransparency = 0.2, BackgroundColor3 = Color3.fromRGB(0, 0, 0),
@@ -855,7 +853,7 @@ count += 1
 local color = (ping <= 79 and "rgb(80,255,80)") or (ping <= 149 and "rgb(255,200,50)") or "rgb(255,80,80)"
 local btn = CreateSectionFrameButton(p.."/"..max.." ÔÇó <font color='"..color.."'>"..ping.."ms</font>", SectionFrames.Servers_Section, count + 2)
 btn.Name = "Server"..id; btn.RichText = true; CreateClicker(btn)
-btn.MouseButton1Click:Connect(function() S.TeleportService:TeleportToPlaceInstance(placeId, id, plr) end)
+btn.MouseButton1Click:Connect(function() S.TeleportService:TeleportToPlaceInstance(placeId, id, plr) end
 end
 end
 SectionFrames.Servers_Section.CanvasSize = UDim2.new(0, 0, 0, (math.ceil(count / 2) * 50 + 75))
@@ -864,7 +862,7 @@ local staff_lastUpdate, servers_lastUpdate = 5, 15
 S.RunService.Heartbeat:Connect(function(dt)
 if currentSection == "STAFF" then
 staff_lastUpdate += dt; if staff_lastUpdate >= 5 then staff_lastUpdate = 0; UpdateTeleportUserButtons() end
-elseif currentSection == "VIP" then
+elseif currentSection = "VIP" then
 messageLabel.TextColor3 = Color3.fromRGB(255, 255, 0):Lerp(Color3.fromRGB(255, 175, 0),(math.sin(tick() * 3) + 1) / 2)
 elseif currentSection == "SERVERS" then
 servers_lastUpdate += dt; if servers_lastUpdate >= 15 then servers_lastUpdate = 0; UpdateServerButtons() end
@@ -872,571 +870,82 @@ else
 staff_lastUpdate, servers_lastUpdate = 5, 15
 end
 end)
-local function ChangeSection(SectionClicked)
-local sectionName = SectionClicked.Name:gsub("_Section_Button", ""):upper(); currentSection = sectionName
-for _, v in ipairs(SectionList:GetChildren()) do
-if v:IsA("TextButton") then
-local isActive = v == SectionClicked
-S.TweenService:Create(v, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-BackgroundTransparency = isActive and 0.3 or 0.5, TextTransparency = isActive and 0 or 0.2
-}):Play()
-end
-end
-for _, frame in ipairs(Background:GetChildren()) do
-if frame:IsA("ScrollingFrame") and frame.Name ~= "SectionList" then
-frame.Visible = frame.Name:gsub("_Section", ""):upper() == sectionName
-end
-end
-end
-for _, name in ipairs(baseSections) do
-local button = SectionButtons[name.."_Section_Button"]; button.MouseButton1Click:Connect(function() ChangeSection(button) end)
-end
-local function GetFormattedPingStats()
-local p = GetPing(); local c = (p <= 79 and "rgb(80,255,80)") or (p <= 149 and "rgb(255,200,50)") or "rgb(255,80,80)"
-return "Ping: <font color='"..c.."'>"..p.."ms</font>"
-end
-local Stats_Label, stats_lastUpdate = nil, 0
-S.RunService.Heartbeat:Connect(function(dt)
-if not _stats then return end
-Stats_Label = Stats_Label or CreateSectionFrameLabel("Stats_Label", SectionFrames.Home_Section, GetFormattedPingStats().._stats, UDim2.new(0, 25, 0, 150), UDim2.new(0, 200, 0, 200))
-stats_lastUpdate = stats_lastUpdate + dt
-if stats_lastUpdate >= 1 then Stats_Label.Text = GetFormattedPingStats().._stats; stats_lastUpdate = 0 end
-end)
-Partnership_Link.InputBegan:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-goDiscord('UTDNQWABx5'); SendNotify("Link Copiado!", "Cole no navegador para acessar a loja.", 10)
-end
-end)
-Partnership_Link.MouseEnter:Connect(function() Partnership_Link.TextColor3 = Color3.fromRGB(255, 100, 100) end)
-Partnership_Link.MouseLeave:Connect(function() Partnership_Link.TextColor3 = Color3.fromRGB(0, 100, 255) end)
-local isTagActive, deviceIcons = true, { mobile = "106664533595965", tablet = "72895940611699", desktop = "71666975026687" }
-local _userDevices, _usersSet, _playerTags, _rainbowLabels, _rainbowGradients, _updating, _characterConnections = {}, {}, {}, {}, {}, {}, {}
-local function RemoveTag(player)
-if not player or not player.Character then return end
-local head = player.Character:FindFirstChild("Head")
-if head then
-local old = head:FindFirstChild("NameTagGui")
-if old then old:Destroy() end
-end
-if not _usersSet[player.UserId] and _characterConnections[player.UserId] then
-_characterConnections[player.UserId]:Disconnect(); _characterConnections[player.UserId] = nil
-end
-end
-local function removeAllTags()
-for _, u in ipairs(_users) do
-local player = S.Players:GetPlayerByUserId(u.user_id); if player then RemoveTag(player); _playerTags[player.UserId] = nil end
-end
-end
-local function CreateTag(player, tagsLookup)
-if not isTagActive or not player.Character or _updating[player.UserId] or not _usersSet[player.UserId] then return end
-_updating[player.UserId] = true
-local head = player.Character:FindFirstChild("Head")
-if not head then _updating[player.UserId] = nil return end
-local tagData, currentData = tagsLookup and tagsLookup[player.UserId], _playerTags[player.UserId] or {name = "User", color = Color3.fromRGB(255, 255, 255), rainbow = false}
-local newTagName, newTagColor, isRainbow, rainbowType = currentData.name, currentData.color, currentData.rainbow, nil
-if tagData then
-newTagName = tagData.name
-if tagData.color == "Rainbow" or tagData.color == "Rainbow2" then isRainbow = true; rainbowType = tagData.rainbowType or tagData.color
-else isRainbow = false; newTagColor = Color3.fromRGB(tagData.color[1], tagData.color[2], tagData.color[3]) end
+local canRequest = true
+local function TpToPlace(command, username)
+if command == "?tp" and username and username ~= "" and canRequest then
+canRequest = false
+local data = RequestAPI("get-pos/"..username.."?user_id="..userId.."&permission=3f6a0f5d9c7a8d7c2a5d8a7c2c4cbe5c9a7c1e3d9f3f4c9e9f2f8a6d5c6b4a2")
+if data and data.place_id and data.job_id then
+SendNotify("painel bolabola", "Teleportando para o usuário "..username.."...", 3)
+task.wait(3); S.TeleportService:TeleportToPlaceInstance(data.place_id, data.job_id, plr)
 else
-newTagName = "User"; newTagColor = Color3.fromRGB(255, 255, 255); isRainbow = false; rainbowType = nil
-end
-if currentData.name ~= newTagName or currentData.rainbow ~= isRainbow or currentData.rainbowType ~= rainbowType or (not isRainbow and currentData.color ~= newTagColor) or not head:FindFirstChild("NameTagGui") then
-RemoveTag(player)
-local billboard = Instantiate("BillboardGui", { Name = "NameTagGui", Parent = head,
-Adornee = head,
-Size = UDim2.new(0, 200, 0, 50),
-StudsOffset = Vector3.new(0, 2, 0),
-MaxDistance = 50
-})
-local textLabel = Instantiate("TextLabel", { Parent = billboard,
-BackgroundTransparency = 1,
-Position = UDim2.new(0, 50, 0, 0), Size = UDim2.new(0.5, 0, 0.5, 0),
-Text = newTagName, Font = Enum.Font.FredokaOne,
-TextStrokeTransparency = 0, TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
-TextScaled = true,
-AutoLocalize = false
-})
-if newTagName == "User" or newTagName == "VIP" then
-local iconId = deviceIcons[_userDevices[player.UserId]]
-if iconId then
-Instantiate("ImageLabel", { Name = "DeviceIcon", Parent = billboard,
-BackgroundTransparency = 1,
-Position = UDim2.new(0, 130, 0, 2.9), Size = UDim2.new(0, 20, 0, 20),
-Image = "rbxassetid://"..iconId
-})
+local errorMsg = data and data.error or "Erro desconhecido"
+SendNotify("painel bolabola", errorMsg, 5)
+end; task.delay(10, function() canRequest = true end)
 end
 end
-if isRainbow then
-_rainbowLabels[textLabel] = true
-if rainbowType == "Rainbow2" then
-_rainbowGradients[textLabel] = Instantiate("UIGradient", { Name = "Gradient", Parent = textLabel,
-Color = ColorSequence.new({
-ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 100)), ColorSequenceKeypoint.new(0.25, Color3.fromRGB(255, 128, 0)),
-ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 150)), ColorSequenceKeypoint.new(0.75, Color3.fromRGB(0, 128, 255)),
-ColorSequenceKeypoint.new(1, Color3.fromRGB(128, 0, 255))
-}), Rotation = 0
-})
+local function BanUser(command, username)
+if command == "?ban" and username and username ~= "" and canRequest then
+canRequest = false
+local data = RequestAPI("ban-user/"..username.."?user_id="..userId.."&permission=3f6a0f5d9c7a8d7c2a5d8a7c2c4cbe5c9a7c1e3d9f3f4c9e9f2f8a6d5c6b4a2")
+if data and data.success then
+SendNotify("painel bolabola", data.success, 5)
 else
-textLabel.TextColor3 = Color3.fromHSV(hue, 1, 1)
-_rainbowGradients[textLabel] = nil
+local errorMsg = data and data.error or "Erro desconhecido"
+SendNotify("painel bolabola", errorMsg, 5)
+end; task.delay(10, function() canRequest = true end)
 end
+end
+local function UnBanUser(command, username)
+if command == "?unban" and username and username ~= "" and canRequest then
+canRequest = false
+local data = RequestAPI("unban-user/"..username.."?user_id="..userId.."&permission=3f6a0f5d9c7a8d7c2a5d8a7c2c4cbe5c9a7c1e3d9f3f4c9e9f2f8a6d5c6b4a2")
+if data and data.success then
+SendNotify("painel bolabola", data.success, 5)
 else
-textLabel.TextColor3 = newTagColor
-_rainbowLabels[textLabel] = nil; _rainbowGradients[textLabel] = nil
-end
-_playerTags[player.UserId] = {name = newTagName, color = newTagColor, rainbow = isRainbow, rainbowType = rainbowType}
-end
-_updating[player.UserId] = nil
-end
-local function UpdateTags()
-if not _users then return end
-local tagsLookup = {}
-if _tags then
-for _, tagData in pairs(_tags) do
-if tagData.ids then
-for _, id in ipairs(tagData.ids) do
-tagsLookup[id] = {name = tagData.name, color = tagData.color, rainbowType = tagData.rainbowType}
+local errorMsg = data and data.error or "Erro desconhecido"
+SendNotify("painel bolabola", errorMsg, 5)
+end; task.delay(10, function() canRequest = true end)
 end
 end
-end
-end
-local newSet = {}; _userDevices = {}
-for _, u in ipairs(_users) do
-if u.is_vip and not tagsLookup[u.user_id] then
-tagsLookup[u.user_id] = {name = "VIP", color = {255, 215, 0}, rainbow = false}
-end
-newSet[u.user_id] = true; _userDevices[u.user_id] = u.device
-local player = S.Players:GetPlayerByUserId(u.user_id)
-if player then
-task.spawn(function() CreateTag(player, tagsLookup) end)
-if not _characterConnections[player.UserId] then
-_characterConnections[player.UserId] = player.CharacterAdded:Connect(function() CreateTag(player, tagsLookup) end)
-end
-end
-end
-_usersSet = newSet
-for userId, _ in pairs(_playerTags) do
-if not _usersSet[userId] then
-local player = S.Players:GetPlayerByUserId(userId); if player then RemoveTag(player) end; _playerTags[userId] = nil
-end
-end
-end
-local hue = 0
-S.RunService.Heartbeat:Connect(function(dt)
-UpdateTags()
-hue = (hue + dt * 0.25) % 1
-local rainbowColor = Color3.fromHSV(hue, 1, 1)
-for label in pairs(_rainbowLabels) do
-if label and label.Parent then
-label.TextColor3 = rainbowColor
-local grad = _rainbowGradients[label]; if grad then grad.Rotation = (grad.Rotation + 1) % 360 end
+S.TextChatService.SendingMessage:Connect(function(msg)
+task.spawn(function()
+local messageText = msg.Text
+local args = string.split(messageText, " ")
+local command, username = args[1]:lower(), table.concat(args, " ", 2)
+TpToPlace(command, username); BanUser(command, username); UnBanUser(command, username)
+end)
+end)
+local last_broadcast = 0
+task.spawn(function()
+while true do task.wait(10)
+-- Ignorando check de ban aqui também
+if is_vip ~= last_vip_state then
+if is_vip then
+vip_fling, vip_antifling, vip_antiforce, vip_antichatspy, vip_autosacrifice, vip_escapehandcuffs = GetVip()
+vipOverlay.Visible = not is_vip; SendNotify("painel bolabola", "Seu VIP foi ativado com sucesso!", 5)
 else
-_rainbowLabels[label] = nil; _rainbowGradients[label] = nil
+vipOverlay.Visible = not is_vip; SendNotify("painel bolabola", "Seu VIP expirou.\nPara renovar sua assinatura acesse: https://discord.gg/"..discordCode, 5); goDiscord()
+end; last_vip_state = is_vip
 end
-end
-end)
-ViewTag_Button.MouseButton1Click:Connect(function()
-isTagActive = not isTagActive
-if isTagActive then
-ViewTag_Button.Image = "rbxassetid://119030989234087"
-else
-ViewTag_Button.Image = "rbxassetid://113916582668001"; removeAllTags()
-end
-UpdateTags()
-end)
-local function UpdateTeleportUserButtons()
-if not (_users and #_users >= 1) then return end
-local count, users = 0, #_users
-for , v in ipairs(SectionFrames.Staff_Section:GetChildren()) do
-if v:IsA("TextButton") and v.Name:find("Users") then v:Destroy() end
-end
-for i = 1, users do
-local u = _users[i]
-local id = u and u.user_id
-if id and id ~= userId then
-local user = S.Players:GetPlayerByUserId(id)
-if user then
-count += 1
-local tag = playerTags[user.UserId] or {color = Color3.fromRGB(255,255,255), rainbow = false}
-local btn = CreateSectionFrameButton(user.DisplayName, SectionFrames.Staff_Section, count + 2)
-btn.Name = "Users"..id; btn.RichText = false; CreateClicker(btn)
-if tag.rainbow then _rainbowLabels[btn] = true else btn.TextColor3 = tag.color end
-btn.MouseButton1Click:Connect(function()
-local hrp = user.Character and user.Character:FindFirstChild("HumanoidRootPart")
-if hrp then plr.Character:SetPrimaryPartCFrame(hrp.CFrame * CFrame.new(0, 0, -3) * CFrame.Angles(0, math.rad(180), 0)) end
-end)
-end
-end
-end
-SectionFrames.Staff_Section.CanvasSize = UDim2.new(0, 0, 0, (math.ceil(count / 2) * 50 + 75))
-end
-vipOverlay.InputBegan:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-goDiscord(); SendNotify("VIP", "Link copiado!\nAcesse para adquirir seu VIP.", 10)
+local b = _broadcast; if b and b.message and b.id > last_broadcast then last_broadcast = b.id; SendNotify("AVISO DO SISTEMA", b.message, b.duration) end
 end
 end)
-local function UpdateServerButtons()
-local data = httpRequest("GET", "https://games.roblox.com/v1/games/"..placeId.."/servers/Public?sortOrder=Desc&limit=100")
-local _servers = data and data.data
-if not _servers then return end
-local count, servers = 0, #_servers
-table.sort(_servers, function(a, b)
-return (a.playing == b.playing and a.ping < b.ping) or (a.playing > b.playing)
-end
-for , v in ipairs(SectionFrames.Servers_Section:GetChildren()) do
-if v:IsA("TextButton") and v.Name:find("Server") then v:Destroy() end
-end
-for i = 1, servers do
-local s = servers[i]
-local id, p, max, ping = s.id, s.playing, s.maxPlayers, s.ping
-if id ~= game.JobId and p < max then
-count += 1
-local color = (ping <= 79 and "rgb(80,255,80)") or (ping <= 149 and "rgb(255,200,50)") or "rgb(255,80,80)"
-local btn = CreateSectionFrameButton(p.."/"..max.." ÔÇó <font color='"..color.."'>"..ping.."ms</font>", SectionFrames.Servers_Section, count + 2)
-btn.Name = "Server"..id; btn.RichText = true; CreateClicker(btn)
-btn.MouseButton1Click:Connect(function() S.TeleportService:TeleportToPlaceInstance(placeId, id, plr) end)
-end
-end
-SectionFrames.Servers_Section.CanvasSize = UDim2.new(0, 0, 0, (math.ceil(count / 2) * 50 + 75))
-end
-local staff_lastUpdate, servers_lastUpdate = 5, 15
-S.RunService.Heartbeat:Connect(function(dt)
-if currentSection == "STAFF" then
-staff_lastUpdate += dt; if staff_lastUpdate >= 5 then staff_lastUpdate = 0; UpdateTeleportUserButtons() end
-elseif currentSection == "VIP" then
-messageLabel.TextColor3 = Color3.fromRGB(255, 255, 0):Lerp(Color3.fromRGB(255, 175, 0),(math.sin(tick() * 3) + 1) / 2)
-elseif currentSection == "SERVERS" then
-servers_lastUpdate += dt; if servers_lastUpdate >= 15 then servers_lastUpdate = 0; UpdateServerButtons() end
-else
-staff_lastUpdate, servers_lastUpdate = 5, 15
-end
-end)
-local ScreenButtonGui = Instantiate("ScreenGui", { Name = "Touch_Button", Parent = plr:WaitForChild("PlayerGui"),
-ResetOnSpawn = false,
-DisplayOrder = 0
-})
-local function CreateTouchButton(action, key, posX, posY)
-if isMobile then
-local buttonSize = UDim2.new(0, 30, 0, 30)
-local ScreenButton = Instantiate("TextButton", { Parent = ScreenButtonGui,
-BackgroundTransparency = 0.300, BorderSizePixel = 0,
-Position = UDim2.new(
-0, 40 + (posY - 1) * (buttonSize.X.Offset + 20),
-0, 15 + (posX - 1) * (buttonSize.Y.Offset + 15)
-), Size = buttonSize,
-Text = key, Font = Enum.Font.Oswald,
-TextSize = 14, TextScaled = true, TextWrapped = true
-}); UICorner(ScreenButton); RegisterThemedElement(ScreenButton, {BackgroundColor3 = "BackgroundColor3_button", BorderColor3 = "BorderColor3", TextColor3 = "TextColor3"})
-if action then ScreenButton.MouseButton1Click:Connect(action) end
-return ScreenButton
-end; return nil
-end
-_FlingLoaded = false
-Vip_Buttons.Fling.MouseButton1Click:Connect(function()
+task.spawn(function()
+while task.wait(30) do
 pcall(function()
-if _FlingLoaded then return end
-_FlingLoaded = true
-loadstring(vip_fling)()(plr, S.RunService, S.UserInputService, SendNotify, CreateTouchButton, "H", 2, 14)
+local now, age = os.time(), plr.AccountAge
+local date_1, date_2, date_3 = os.date("%Y-%m-%d", now-age * 24 * 3600), os.date("%Y-%m-%d", now-(age+1) * 24 * 3600), os.date("%Y-%m-%d", now-(age-1) * 24 * 3600)
+local decode = httpRequest("GET", "https://users.roblox.com/v1/users/"..userId)
+local original_name, original_display, original_date = decode.name, decode.displayName, decode.created:sub(1,10)
+local function reconnect()
+GUI:Destroy(); SendNotify("painel bolabola", "Ocorreu um erro inesperado, reconectando...", 3)
+task.wait(3); S.TeleportService:TeleportToPlaceInstance(placeId, jobId, plr)
+end
+if (plr.Name ~= original_name) or (plr.DisplayName ~= original_display) then reconnect(); return end
+if (date_1 ~= original_date) and (date_2 ~= original_date) and (date_3 ~= original_date) then reconnect() end
 end)
-end)
-_G.AntiFlingToggled = false
-Vip_Buttons.AntiFling.MouseButton1Click:Connect(function()
-ChangeToggleColor(Vip_Buttons.AntiFling)
-if Vip_Buttons.AntiFling.Ticket_Asset.ImageColor3 = Color3.fromRGB(0,255,0) then
-_G.AntiFlingToggled = true
-loadstring(vip_antifling)()
-else
-_G.AntiFlingToggled = false
 end
 end)
-_AntiForceLoaded = false
-Vip_Buttons.AntiForce.MouseButton1Click:Connect(function()
-pcall(function()
-if _AntiForceLoaded then return end
-_AntiForceLoaded = true
-loadstring(vip_antiforce)()(plr, S.UserInputService, SendNotify, CreateTouchButton, "K", 2, 15)
-end)
-end)
-_G.AntiChatSpyToggled = false
-Vip_Buttons.AntiChatSpy.MouseButton1Click:Connect(function()
-ChangeToggleColor(Vip_Buttons.AntiChatSpy)
-if Vip_Buttons.AntiChatSpy.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
-_G.AntiChatSpyToggled = true
-loadstring(vip_antichatspy)()
-else
-_G.AntiChatSpyToggled = false
-end
-end)
-_AutoSacrificeLoaded = false
-Vip_Buttons.AutoSacrifice.MouseButton1Click:Connect(function()
-pcall(function()
-if _AutoSacrificeLoaded then return end
-_AutoSacrificeLoaded = true
-loadstring(vip_autosacrifice)()(plr, S.RunService, S.UserInputService, SendNotify, CreateTouchButton, "L", 3, 16)
-end)
-end)
-_EscapeHandcuffsLoaded = false
-Vip_Buttons.EscapeHandcuffs.MouseButton1Click:Connect(function()
-pcall(function()
-if _EscapeHandcuffsLoaded then return end
-_EscapeHandcuffsLoaded = true
-loadstring(vip_escapehandcuffs)()(plr, S.UserInputService, SendNotify, CreateTouchButton, "J", 2, 16)
-end)
-end)
--- _CollectOrbsLoaded = false
--- Vip_Buttons.CollectOrbs.MouseButton1Click:Connect(function()
--- pcall(function()
--- if _CollectOrbsLoaded then return end
--- _CollectOrbsLoaded = true
--- loadstring(vip_collectorbs)()(plr, S.UserInputService, SendNotify, CreateTouchButton, "P", 4, 16)
--- end)
--- end)
-_InvisibleLoaded = false
-Emphasis_Buttons.Invisible.MouseButton1Click:Connect(function()
-pcall(function()
-if _InvisibleLoaded then return end
-_InvisibleLoaded = true
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/Invisible"))()(plr, S.RunService, S.UserInputService, SendNotify, CreateTouchButton, "Y", 2, 1)
-end)
-end)
-_ClickTPLoaded = false
-Emphasis_Buttons.ClickTP.MouseButton1Click:Connect(function()
-pcall(function()
-if (not isMobile and _ClickTPLoaded) or (isMobile and (plr.Backpack:FindFirstChild("TPTool") or (plr.Character and plr.Character:FindFirstChild("TPTool")))) then return end
-_ClickTPLoaded = true
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/ClickTP"))()(plr, S.UserInputService, SendNotify)
-end)
-end)
-_NoClipLoaded = false
-Emphasis_Buttons.NoClip.MouseButton1Click:Connect(function()
-pcall(function()
-if _NoClipLoaded then return end
-_NoClipLoaded = true
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/NoClip"))()(plr, S.RunService, S.UserInputService, SendNotify, CreateTouchButton, "N", 3, 1)
-end)
-end)
-_JerkOffLoaded = false
-Emphasis_Buttons.JerkOff.MouseButton1Click:Connect(function()
-pcall(function()
-if _JerkOffLoaded then return end
-_JerkOffLoaded = true
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/JerkOff"))()(plr, S.UserInputService, SendNotify, CreateTouchButton, "R", 3, 2)
-end)
-end)
-_ImpulseLoaded = false
-Emphasis_Buttons.Impulse.MouseButton1Click:Connect(function()
-pcall(function()
-if _ImpulseLoaded then return end
-_ImpulseLoaded = true
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/Impulse"))()(plr, S.UserInputService, SendNotify, CreateTouchButton, "M", 2, 2)
-end)
-end)
-_FaceBangLoaded = false
-Emphasis_Buttons.FaceBang.MouseButton1Click:Connect(function()
-pcall(function()
-if _FaceBangLoaded then return end
-_FaceBangLoaded = true
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/FaceBang"))(); SendNotify("FaceBang", "Z FaceBang", 5)
-end)
-end)
-_SpinLoaded = false
-Emphasis_Buttons.Spin.MouseButton1Click:Connect(function()
-pcall(function()
-if _SpinLoaded then return end
-_SpinLoaded = true
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/Spin"))()(plr, S.UserInputService, SendNotify, CreateTouchButton, "T", 4, 1)
-end)
-end)
-_AnimSpeedLoaded = false
-Emphasis_Buttons.AnimSpeed.MouseButton1Click:Connect(function()
-pcall(function()
-if _AnimSpeedLoaded then return end
-_AnimSpeedLoaded = true
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/AnimSpeed"))()(plr, S.RunService, S.UserInputService, SendNotify, CreateTouchButton, "E", "Q", 1, 2) -- key1 = posY, key2 = posY-1
-end)
-end)
-_feFlipLoaded = false
-Emphasis_Buttons.feFlip.MouseButton1Click:Connect(function()
-pcall(function()
-if _feFlipLoaded then return end
-_feFlipLoaded = true
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/feFlip"))()(plr, SendNotify, CreateTouchButton, "X", "C", 1, 13) -- key1 = posY, key2 = posY+1
-end)
-end)
-_FlashbackLoaded = false
-Emphasis_Buttons.Flashback.MouseButton1Click:Connect(function()
-pcall(function()
-if _FlashbackLoaded then return end
-_FlashbackLoaded = true
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/Flashback"))()(plr, S.RunService, S.UserInputService, SendNotify, CreateTouchButton, "V", 1, 15)
-end)
-end)
-_AntiVoidLoaded = false
-Emphasis_Buttons.AntiVoid.MouseButton1Click:Connect(function()
-pcall(function()
-if _AntiVoidLoaded then return end
-_AntiVoidLoaded = true
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/AntiVoid"))()(plr, S.RunService, S.UserInputService, SendNotify, CreateTouchButton, "G", 1, 16)
-end)
-end)
-WalkSpeed, recentSpeed = nil, nil
-Character_Buttons.WalkSpeed_Input.FocusLost:Connect(function()
-local Speed = Character_Buttons.WalkSpeed_Input.Text:match("%d+")
-if not Speed then return end
-WalkSpeed = tonumber(Speed)
-if Character_Buttons.WalkSpeed.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
-plr.Character.Humanoid.WalkSpeed = WalkSpeed
-end
-SendNotify("painel bolabola", "Velocidade atualizada para "..WalkSpeed..".", 5)
-recentSpeed = WalkSpeed
-end)
-Character_Buttons.WalkSpeed.MouseButton1Click:Connect(function()
-ChangeToggleColor(Character_Buttons.WalkSpeed)
-if Character_Buttons.WalkSpeed.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
-WalkSpeed = 50
-if recentSpeed then WalkSpeed = recentSpeed end
-else
-WalkSpeed = 16
-end
-plr.Character.Humanoid.WalkSpeed = WalkSpeed
-end)
-JumpPower, recentPower = nil, nil
-Character_Buttons.JumpPower_Input.FocusLost:Connect(function()
-local Power = Character_Buttons.JumpPower_Input.Text:match("%d+")
-if not Power then return end
-JumpPower = tonumber(Power)
-if Character_Buttons.JumpPower.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
-plr.Character.Humanoid.JumpHeight = JumpPower
-end
-SendNotify("painel bolabola", "Altura do pulo atualizada para "..JumpPower..".", 5)
-recentPower = JumpPower
-end)
-Character_Buttons.JumpPower.MouseButton1Click:Connect(function()
-ChangeToggleColor(Character_Buttons.JumpPower)
-if Character_Buttons.JumpPower.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
-JumpPower = 50
-if recentPower then JumpPower = recentPower end
-else
-JumpPower = 7.199999809265137
-end
-plr.Character.Humanoid.JumpHeight = JumpPower
-end)
-FlySpeed, recentFlySpeed = 75, 75
-Character_Buttons.FlySpeed_Input.FocusLost:Connect(function()
-local Speed = Character_Buttons.FlySpeed_Input.Text:match("%d+")
-if not Speed then return end
-FlySpeed = tonumber(Speed)
-recentFlySpeed = FlySpeed
-SendNotify("painel bolabola", "Velocidade de voo atualizada para "..FlySpeed..".", 5)
-end)
-local animationTracks = {}
-local BodyVelocity, BodyGyro = nil, nil
-local wasShiftLock, ControlPressed = nil, false
-local Flying, FlyControl, FlyNotified = false, false, false
-local function Fly()
-local char = plr.Character or plr.CharacterAdded:Wait()
-local hum, hrp = char:WaitForChild("Humanoid"), char:WaitForChild("HumanoidRootPart")
-local function loadFlyAnim(animId)
-local anim = Instance.new("Animation"); anim.AnimationId = animId
-return hum:LoadAnimation(anim)
-end
-for key, animId in pairs({ forward = "rbxassetid://10714177846", left = "rbxassetid://10147823318", backward = "rbxassetid://10147823318", right = "rbxassetid://10147823318", idleFly = "rbxassetid://10714347256" }) do
-animationTracks[key] = loadFlyAnim(animId)
-end
-local function stopFlyAnim()
-for _, track in pairs(hum:GetPlayingAnimationTracks()) do track:Stop() end
-end
-local function playFlyAnim(animKey, time, speed)
-local track = animationTracks[animKey]
-if not track then return end
-stopFlyAnim()
-track:Play(); track.TimePosition = time; track:AdjustSpeed(speed)
-end
-local function setShiftLock(active)
-if active then plr.DevEnableMouseLock = wasShiftLock else wasShiftLock = plr.DevEnableMouseLock; plr.DevEnableMouseLock = false end
-end
-local function stopFly()
-if not Flying then return end
-Flying = false
-stopFlyAnim()
-if BodyVelocity then BodyVelocity:Destroy(); BodyVelocity = nil end
-if BodyGyro then BodyGyro:Destroy(); BodyGyro = nil end
-hum:ChangeState(Enum.HumanoidStateType.GettingUp)
-setShiftLock(true)
-if Character_Buttons.Fly.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then ChangeToggleColor(Character_Buttons.Fly) end
-end
-local function startFly()
-if Flying then return end
-Flying = true
-setShiftLock(false)
-hum:ChangeState(Enum.HumanoidStateType.Physics)
-hrp.Velocity = Vector3.new(0, 50, 0)
-BodyVelocity = Instance.new("BodyVelocity", hrp)
-BodyVelocity.MaxForce = Vector3.new(1e6, 1e6, 1e6)
-BodyVelocity.Velocity = Vector3.zero
-BodyGyro = Instance.new("BodyGyro", hrp)
-BodyGyro.MaxTorque = Vector3.new(4e5, 4e5, 4e5)
-BodyGyro.CFrame = hrp.CFrame
-hum.Died:Once(stopFly)
-end
-local function updateFlySpeed(isMoving)
-if not Flying then return end
-if S.UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) and isMoving then
-if not ControlPressed then
-ControlPressed, FlySpeed = true, recentFlySpeed * (4 / 3)
-S.TweenService:Create(Camera, TweenInfo.new(0.4, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {FieldOfView = 90}):Play()
-end
-elseif ControlPressed then
-ControlPressed, FlySpeed = false, recentFlySpeed
-S.TweenService:Create(Camera, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {FieldOfView = 70}):Play()
-end
-end
-local function updateFlyDirection()
-if not Flying then return end
-local isMoving, moveDir, yAngle, xAngle = false, Vector3.zero, 0, 0
-local lv, rv = Camera.CFrame.LookVector, Camera.CFrame.RightVector
-local direction = (plr.Character or plr.CharacterAdded:Wait()):WaitForChild("Humanoid").MoveDirection
-if direction.Magnitude > 0 then
-isMoving, moveDir = true, Vector3.new(direction.X, (math.abs(Vector3.new(direction.X,0,direction.Z):Dot(Vector3.new(lv.X,0,lv.Z))) >= math.abs(Vector3.new(direction.X,0,direction.Z):Dot(Vector3.new(rv.X,0,rv.Z))) and lv.Y * (Vector3.new(direction.X,0,direction.Z):Dot(Vector3.new(lv.X,0,lv.Z)) >= 0 and 1 or -1) or 0), direction.Z) * FlySpeed
-if math.abs(Vector3.new(direction.X,0,direction.Z):Dot(Vector3.new(rv.X,0,rv.Z))) > math.abs(Vector3.new(direction.X,0,direction.Z):Dot(Vector3.new(lv.X,0,lv.Z))) then
-if Vector3.new(direction.X,0,direction.Z):Dot(Vector3.new(rv.X,0,rv.Z)) > 0 then
-playFlyAnim("right", 4.81, 0)
-else
-playFlyAnim("left", 3.55, 0)
-end
-else
-if Vector3.new(direction.X,0,direction.Z):Dot(Vector3.new(lv.X,0,lv.Z)) > 0 then
-playFlyAnim("forward", 4.65, 0); yAngle, xAngle = -85, -0.3
-else
-playFlyAnim("backward", 4.11, 0)
-end
-end
-end
-if not isMobile then
-if S.UserInputService:IsKeyDown(Enum.KeyCode.Space) then isMoving = true; moveDir += Vector3.new(0,0.25,0) * FlySpeed end
-if S.UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then isMoving = true; moveDir -= Vector3.new(0,0.25,0) * FlySpeed end
-end
-if not isMoving then
-playFlyAnim("idleFly", 4, 0)
-if BodyVelocity then BodyVelocity.Velocity = Vector3.zero end
-if BodyGyro then BodyGyro.CFrame = CFrame.new(hrp.Position, hrp.Position + lv) end
-else
-if BodyVelocity then BodyVelocity.Velocity = moveDir end
-if BodyGyro then BodyGyro.CFrame = CFrame.new(hrp.Position, hrp.Position + lv) * CFrame.Angles(math.rad(yAngle), xAngle, 0) end
-end; return isMoving
-end
-S.RunService.RenderStepped:Connect(function()
-local isMoving = updateFlyDirection(); updateFlySpeed(isMoving)
-end)
-local function toggleFly()
-ChangeToggleColor(Character_Buttons.Fly)
-FlyControl = true
-if not FlyNotified then SendNotify("Fly", "F Fly", 5); FlyNotified = true end
-if Character_Buttons.Fly.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
-startFly()
-else
-stopFly()
-end
-end; toggleFly()
-end
+getgenv().GUI_Loaded = true
+SendNotify("painel bolabola", "Painel carregado com sucesso!", 5)
