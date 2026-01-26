@@ -2,78 +2,84 @@ if getgenv().GUI_Loaded then return end; getgenv().GUI_Loaded = true
 
 -- // CONFIGURAÇÕES DO PAINEL BOLABOLA \\ --
 local version, discordCode, ownerId = "4.5.6", "ksxs", 3961485767
-local API_URL = "https://api-painel-bolabola.onrender.com" -- Link do seu Render
+local API_URL = "https://api-painel-bolabola.onrender.com" 
 local API_TOKEN = "bolabolabolabola"
 local NOME_PAINEL = "Painel bolabola"
 
 local httprequest = request or http_request or (syn and syn.request) or (http and http.request) or (fluxus and fluxus.request)
 local S = setmetatable({}, { __index = function(t,k) local s=game:GetService(k); t[k]=s; return s end })
-local plr, placeId = S.Players.LocalPlayer, game.PlaceId
-local userId, placeName, jobId, Camera, Mouse, isMobile = plr.UserId, S.MarketplaceService:GetProductInfo(placeId).Name, game.JobId, game.Workspace.CurrentCamera, plr:GetMouse(), S.UserInputService.TouchEnabled and not S.UserInputService.KeyboardEnabled
+local plr = S.Players.LocalPlayer
+local userId = plr.UserId
+
+-- Variáveis globais de estado
+is_vip = false
+is_staff = false
+is_banned = false
+
+-- Funções Auxiliares (Colocadas no topo para evitar erros)
+local function Instantiate(class, props)
+    local inst = Instance.new(class); for prop, val in pairs(props) do pcall(function() inst[prop] = val end) end
+    return inst
+end
 
 local function SendNotify(title, message, duration) 
-    S.StarterGui:SetCore("SendNotification", { Title = title, Text = message, Duration = duration; }) 
+    pcall(function() S.StarterGui:SetCore("SendNotification", { Title = title, Text = message, Duration = duration; }) end)
 end
 
--- Função de requisição atualizada para sua nova API
-local function httpRequest(method, url, headers, body)
-    local customHeaders = headers or {}
-    customHeaders["x-token"] = API_TOKEN
-    
-    local success, r = pcall(function()
-        return httprequest({Url=url, Method=method or "GET", Headers=customHeaders, Body=body})
-    end)
-    
-    if success and r and r.Body then
-        local ok, decoded = pcall(S.HttpService.JSONDecode, S.HttpService, r.Body)
-        return ok and decoded or nil
+-- // 1. CRIAÇÃO IMEDIATA DA INTERFACE (PARA NÃO TRAVAR) \\ --
+local GUI = Instantiate("ScreenGui", { Name = "PainelBola", Parent = plr:WaitForChild("PlayerGui"), ResetOnSpawn = false })
+
+local Background = Instantiate("ImageLabel", { 
+    Name = "Background", Parent = GUI, 
+    Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(0, 500, 0, 350),
+    AnchorPoint = Vector2.new(0.5, 0.5), ImageTransparency = 0.5,
+    BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+})
+
+local TitleBarLabel = Instantiate("TextLabel", { 
+    Parent = Background, Size = UDim2.new(1, 0, 0, 30),
+    Text = NOME_PAINEL, BackgroundColor3 = Color3.fromRGB(0, 0, 0), 
+    TextColor3 = Color3.fromRGB(255, 255, 255)
+})
+
+-- // 2. VERIFICAÇÃO EM SEGUNDO PLANO (ASSÍNCRONA) \\ --
+task.spawn(function()
+    local function RequestAPI()
+        local success, r = pcall(function()
+            return httprequest({
+                Url = API_URL .. "/check/" .. userId,
+                Method = "GET",
+                Headers = { ["x-token"] = API_TOKEN }
+            })
+        end)
+        if success and r and r.Body then
+            local ok, decoded = pcall(S.HttpService.JSONDecode, S.HttpService, r.Body)
+            return ok and decoded or nil
+        end
+        return nil
     end
-    return nil
-end
 
-local function goDiscord(code)
-        local code = code or discordCode; setclipboard("https://discord.gg/"..code)
-        httpRequest(
-                'POST', 'http://127.0.0.1:6463/rpc?v=1', { ['Content-Type'] = 'application/json', Origin = 'https://discord.com' },
-                S.HttpService:JSONEncode({ cmd = 'INVITE_BROWSER', nonce = S.HttpService:GenerateGUID(false), args = {code = code} })
-        )
-end
-
--- Rota de checagem única (VIP e BAN)
-local function RequestAPI(route) 
-    return httpRequest("GET", API_URL .. "/check/" .. userId) 
-end
-
--- Verificação que não deixa o painel travar
-local function IsUserBanned()
     local data = RequestAPI()
-    
-    if not data then 
-        warn("["..NOME_PAINEL.."] API Offline ou carregando. Entrando como Membro.")
-        is_vip, is_staff = false, false
-        return false 
+    if data then
+        if data.is_banned then
+            plr:Kick("\n["..NOME_PAINEL.."]\nVocê está banido: " .. (data.reason or "Sem motivo"))
+            return
+        end
+        is_vip = data.is_vip == true
+        is_staff = (data.tag == "[STAFF]" or data.tag == "[DONO]")
+        
+        -- Atualiza a interface se o VIP for detectado após o carregamento
+        if is_vip and Background:FindFirstChild("VipSection") then
+            -- Aqui você pode colocar o código para esconder o "Overlay de Compra"
+        end
+        SendNotify(NOME_PAINEL, "Dados carregados! Cargo: " .. (data.tag or "Membro"), 4)
+    else
+        SendNotify(NOME_PAINEL, "Servidor em standby. Funções VIP desativadas temporariamente.", 5)
     end
-    
-    if data.is_banned then return true end
-    
-    is_vip = data.is_vip == true
-    is_staff = (data.tag == "[STAFF]" or data.tag == "[DONO]")
-    _broadcast = data.reason or ""
-    return false
-end; is_banned = IsUserBanned()
+end)
 
-if is_banned then
-    SendNotify(NOME_PAINEL, "Você está banido do "..NOME_PAINEL, 10); goDiscord(); task.wait(5)
-    plr:Kick("\n["..NOME_PAINEL.."]\nVocê está banido!")
-    getgenv().GUI_Loaded = false; return
-end
 
--- [O RESTANTE DO SEU CÓDIGO DE INTERFACE CONTINUA IGUAL]
--- Certifique-se de mudar o texto fixo "ksx's Panel" para "Painel bolabola" nas linhas da GUI abaixo:
-
-local function GetStats()
-    return "\n\nStatus: Online\nUser: "..plr.Name.."\nPainel: "..NOME_PAINEL
-end
+print("Painel carregado com sucesso!")
 Themes = {
         Dark = {
                 BackgroundColor3_title = Color3.fromRGB(0, 0, 0), BackgroundColor3_button = Color3.fromRGB(100, 100, 100), BackgroundColor3 = Color3.fromRGB(35, 35, 35), TextColor3_credits = Color3.fromRGB(255, 255, 255), BorderColor3 = Color3.fromRGB(45, 45, 45), ImageColor3 = Color3.fromRGB(25, 25, 25), TextColor3 = Color3.fromRGB(150, 150, 150), PlaceholderTextColor3 = Color3.fromRGB(140, 140, 140)
