@@ -21,7 +21,7 @@ local function goDiscord(code)
         )
 end
 
-local function RequestAPI(route) return httpRequest("GET", "https://api-ksxspanel-h3xv.onrender.com/"..route) end
+local function RequestAPI(route) return httpRequest("GET", " https://api-painel-bolabola.onrender.com/"..route) end
 
 local function IsUserBanned()
         local data = RequestAPI("is-banned/"..userId.."?place_name="..S.HttpService:UrlEncode(placeName).."&place_id="..placeId.."&job_id="..jobId)
@@ -66,7 +66,7 @@ task.spawn(function()
 end)
 
 if not isfolder("ksx") then makefolder("ksx") end
-local __path = "ksx/settings.json"
+local __path = "database.json"
 
 function WriteFile(section, key, value)
         local data = (isfile(__path) and S.HttpService:JSONDecode(readfile(__path))) or {}
