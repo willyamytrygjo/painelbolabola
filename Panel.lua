@@ -21,7 +21,7 @@ local function goDiscord(code)
         )
 end
 
-local function RequestAPI(route) return httpRequest("GET", "https://api-ksxspanel-h3xv.onrender.com/"..route) end
+local function RequestAPI(route) return httpRequest("GET", "https://api-Painel bolabola-h3xv.onrender.com/"..route) end
 
 local function IsUserBanned()
         local data = RequestAPI("is-banned/"..userId.."?place_name="..S.HttpService:UrlEncode(placeName).."&place_id="..placeId.."&job_id="..jobId)
