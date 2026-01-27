@@ -2099,19 +2099,12 @@ task.spawn(function()
     end
 end)
 
---[[ 
-PATCH AUTO-OPEN FINAL
-• Abre o painel automaticamente
-• Blur real
-• Animação smooth
-• Não depende de nomes específicos
-• Não usa API
-]]
 
 task.spawn(function()
+    local Players = game:GetService("Players")
     local TweenService = game:GetService("TweenService")
     local Lighting = game:GetService("Lighting")
-    local Players = game:GetService("Players")
+
     local player = Players.LocalPlayer
     local gui = player:WaitForChild("PlayerGui")
 
@@ -2126,30 +2119,38 @@ task.spawn(function()
 
     TweenService:Create(
         blur,
-        TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
         { Size = 14 }
     ):Play()
 
-    -- Aguarda qualquer painel grande aparecer
+    -- Aguarda ScreenGui e força Enabled
+    local screenGui
+    repeat
+        for _,v in ipairs(gui:GetChildren()) do
+            if v:IsA("ScreenGui") then
+                v.Enabled = true
+                screenGui = v
+                break
+            end
+        end
+        task.wait()
+    until screenGui
+
+    -- Encontra o MAIOR Frame (painel real)
     local panel
     repeat
-        for _,sg in ipairs(gui:GetChildren()) do
-            if sg:IsA("ScreenGui") then
-                for _,v in ipairs(sg:GetDescendants()) do
-                    if v:IsA("Frame")
-                        and v.Size.X.Offset > 250
-                        and v.Size.Y.Offset > 180 then
-                        panel = v
-                        break
-                    end
+        for _,v in ipairs(screenGui:GetDescendants()) do
+            if v:IsA("Frame") then
+                if not panel or (v.AbsoluteSize.X * v.AbsoluteSize.Y) >
+                   (panel.AbsoluteSize.X * panel.AbsoluteSize.Y) then
+                    panel = v
                 end
             end
-            if panel then break end
         end
         task.wait()
     until panel
 
-    -- Força visibilidade + animação
+    -- Força abertura + animação
     panel.Visible = true
     panel.AnchorPoint = Vector2.new(0.5, 0.5)
 
@@ -2157,9 +2158,9 @@ task.spawn(function()
     panel.BackgroundTransparency = 1
     panel.Size = UDim2.new(
         originalSize.X.Scale,
-        originalSize.X.Offset * 0.9,
+        originalSize.X.Offset * 0.88,
         originalSize.Y.Scale,
-        originalSize.Y.Offset * 0.9
+        originalSize.Y.Offset * 0.88
     )
 
     TweenService:Create(
