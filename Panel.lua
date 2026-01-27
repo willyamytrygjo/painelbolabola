@@ -1,36 +1,10 @@
---[[
-PATCH: API DESATIVADA COMPLETAMENTE (MODO LOCAL)
-VIP E STAFF SEMPRE ATIVOS
-Nenhuma lógica interna foi removida
-]]
 local is_vip = true
 local is_staff = true
 local is_banned = false
 
--- sobrescrevendo funções de API
-local function RequestAPI(...) return nil end
-local function IsUserBanned() return false end
-local function GetStats() return "" end
-local function GetData() return {}, {} end
-local function GetVip()
-    return true, true, true, true, true, true
-end
-
-
 if getgenv().GUI_Loaded then return end; getgenv().GUI_Loaded = true
 
 local version, discordCode, ownerId = "4.5.6", "ksxs", 3961485767
-local httprequest = request or http_request or (syn and syn.request) or (http and http.request) or (fluxus and fluxus.request)
-local S = setmetatable({}, { __index = function(t,k) local s=game:GetService(k); t[k]=s; return s end })
-local plr, placeId = S.Players.LocalPlayer, game.PlaceId
-local userId, placeName, jobId, Camera, Mouse, isMobile = plr.UserId, S.MarketplaceService:GetProductInfo(placeId).Name, game.JobId, game.Workspace.CurrentCamera, plr:GetMouse(), S.UserInputService.TouchEnabled and not S.UserInputService.KeyboardEnabled
-
-local function SendNotify(title, message, duration) S.StarterGui:SetCore("SendNotification", { Title = title, Text = message, Duration = duration; }) end
-
-local function httpRequest(method, url, headers, body)
-        local r = httprequest({Url=url, Method=method or "GET", Headers=headers, Body=body})
-        return r and r.Body and select(2, pcall(S.HttpService.JSONDecode, S.HttpService, r.Body))
-end
 
 local function goDiscord(code)
         local code = code or discordCode; setclipboard("https://discord.gg/"..code)
@@ -40,48 +14,13 @@ local function goDiscord(code)
         )
 end
 
-local function RequestAPI(route) return httpRequest("GET", "https://api-ksxspanel-h3xv.onrender.com/"..route) end
-
-local function IsUserBanned()
-        local data = RequestAPI("is-banned/"..userId.."?place_name="..S.HttpService:UrlEncode(placeName).."&place_id="..placeId.."&job_id="..jobId)
-        if not data then return nil end; if data.is_banned then return true end
-        is_vip, is_staff, _broadcast = data.is_vip == true, data.is_staff == true, data.broadcast
-        return false
-end; is_banned = IsUserBanned()
-
-if is_banned == nil then
-        getgenv().GUI_Loaded = false; return
-elseif is_banned then
-        SendNotify("ksx's Panel", "Voc├¬ est├í banido do ksx's Panel\nContate o suporte: https://discord.gg/"..discordCode, 10); goDiscord(); task.wait(10)
-        getgenv().GUI_Loaded = false; return
-end
 
 local function GetPing() return math.floor(S.Stats.Network.ServerStatsItem["Data Ping"]:GetValue()) end
 
-local function GetStats()
-    local data = RequestAPI("get-stats")
-    if not data then return "" end
-        return "\n\nOnline: <font color='rgb(200,200,200)'>"..(data.online_count or 0).."</font>".."\nUsers: <font color='rgb(200,200,200)'>"..(data.total_count or 0).."</font>".."\n\nDate: <font color='rgb(200,200,200)'>"..(data.current_date or "N/A").."</font>"
-end
 
-local function GetData()
-    local data = RequestAPI("get-data/"..jobId)
-    if not data then return {}, {} end
-    return data.tags or {}, data.users or {}
-end
 
 task.spawn(function() while true do _stats = GetStats(); _tags, _users = GetData(); task.wait(10) end end)
 
-local function GetVip()
-        local data = RequestAPI("is-vip/"..userId.."?permission=3f6a0f5d9c7a8d7c2a5d8a7c2c4cbe5c9a7c1e3d9f3f4c9e9f2f8a6d5c6b4a2")
-        if not data then return "", "", "", "", "", "" end
-        return data["Fling"] or "", data["AntiFling"] or "", data["AntiForce"] or "", data["AntiChatSpy"] or "", data["AutoSacrifice"] or "", data["EscapeHandcuffs"] or ""
-end; if is_vip then vip_fling, vip_antifling, vip_antiforce, vip_antichatspy, vip_autosacrifice, vip_escapehandcuffs = GetVip(); if vip_fling == "" then is_vip = false end end; last_vip_state = is_vip
-
-task.spawn(function()
-        for _,p in ipairs({ {"AntiCheat", "FlingDetected"}, {"AntiCheat", "GuiThreatDetected"}, {"KickSystem", "KickFeedback"} }) do
-                local f=S.ReplicatedStorage:FindFirstChild(p[1]); if f then local x=f:FindFirstChild(p[2]); if x then x:Destroy() end end
-        end
 end)
 
 if not isfolder("ksx") then makefolder("ksx") end
@@ -2052,3 +1991,110 @@ task.spawn(function()
                 end)
         end
 end)
+
+
+--[[
+VISUAL UPGRADE PESADO
+- Blur real (Lighting.BlurEffect)
+- Animações smooth (TweenService)
+- Hover suave em botões
+- Sem mexer na lógica existente
+]]
+
+task.spawn(function()
+    local TweenService = game:GetService("TweenService")
+    local Lighting = game:GetService("Lighting")
+    local Players = game:GetService("Players")
+    local plr = Players.LocalPlayer
+
+    -- Aguarda GUI
+    local gui
+    repeat
+        task.wait()
+        gui = plr:FindFirstChildOfClass("PlayerGui")
+    until gui
+
+    -- Blur real
+    local blur = Lighting:FindFirstChild("ksx_blur")
+    if not blur then
+        blur = Instance.new("BlurEffect")
+        blur.Name = "ksx_blur"
+        blur.Size = 0
+        blur.Parent = Lighting
+    end
+
+    local function tweenBlur(target)
+        TweenService:Create(blur, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = target
+        }):Play()
+    end
+
+    -- Procura painel
+    local panel
+    repeat
+        task.wait()
+        for _,v in ipairs(gui:GetChildren()) do
+            if v:IsA("ScreenGui") then
+                panel = v:FindFirstChild("Background", true)
+                if panel then break end
+            end
+        end
+    until panel
+
+    -- Animação de entrada
+    panel.AnchorPoint = Vector2.new(0.5,0.5)
+    local originalSize = panel.Size
+    panel.Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset * 0.9, originalSize.Y.Scale, originalSize.Y.Offset * 0.9)
+    panel.BackgroundTransparency = 1
+
+    TweenService:Create(panel, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+        Size = originalSize,
+        BackgroundTransparency = 0.05
+    }):Play()
+
+    tweenBlur(14)
+
+    -- Open / Close smooth
+    local openBtn = panel.Parent:FindFirstChild("OpenClose", true)
+    if openBtn then
+        local opened = true
+        openBtn.MouseButton1Click:Connect(function()
+            opened = not opened
+            if opened then
+                panel.Visible = true
+                tweenBlur(14)
+                TweenService:Create(panel, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                    Size = originalSize,
+                    BackgroundTransparency = 0.05
+                }):Play()
+            else
+                tweenBlur(0)
+                TweenService:Create(panel, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+                    Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset * 0.85, originalSize.Y.Scale, originalSize.Y.Offset * 0.85),
+                    BackgroundTransparency = 1
+                }):Play()
+                task.delay(0.25, function()
+                    panel.Visible = false
+                end)
+            end
+        end)
+    end
+
+    -- Hover suave em botões
+    for _,btn in ipairs(panel:GetDescendants()) do
+        if btn:IsA("TextButton") or btn:IsA("ImageButton") then
+            local orig = btn.BackgroundTransparency
+            btn.MouseEnter:Connect(function()
+                TweenService:Create(btn, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    BackgroundTransparency = math.clamp(orig - 0.15, 0, 1)
+                }):Play()
+            end)
+            btn.MouseLeave:Connect(function()
+                TweenService:Create(btn, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    BackgroundTransparency = orig
+                }):Play()
+            end)
+        end
+    end
+end)
+
