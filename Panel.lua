@@ -1,17 +1,12 @@
-if getgenv().GUI_Loaded then return end
-getgenv().GUI_Loaded = true
+if getgenv().GUI_Loaded then return end; getgenv().GUI_Loaded = true
 
 local version, discordCode, ownerId = "4.5.6", "ksxs", 3961485767
-local API_URL = "https://api-painel-rcfr.onrender.com"  -- API alterada
-local API_TOKEN = "bolabolabolabola"
-local NOME_PAINEL = "Painel Rcfr"  -- Nome alterado
-
 local httprequest = request or http_request or (syn and syn.request) or (http and http.request) or (fluxus and fluxus.request)
 local S = setmetatable({}, { __index = function(t,k) local s=game:GetService(k); t[k]=s; return s end })
 local plr, placeId = S.Players.LocalPlayer, game.PlaceId
 local userId, placeName, jobId, Camera, Mouse, isMobile = plr.UserId, S.MarketplaceService:GetProductInfo(placeId).Name, game.JobId, game.Workspace.CurrentCamera, plr:GetMouse(), S.UserInputService.TouchEnabled and not S.UserInputService.KeyboardEnabled
 
-local function SendNotify(title, message, duration) S.StarterGui:SetCore("SendNotification", { Title = title, Text = message, Duration = duration or 5 }) end
+local function SendNotify(title, message, duration) S.StarterGui:SetCore("SendNotification", { Title = title, Text = message, Duration = duration; }) end
 
 local function httpRequest(method, url, headers, body)
         local r = httprequest({Url=url, Method=method or "GET", Headers=headers, Body=body})
@@ -26,19 +21,19 @@ local function goDiscord(code)
         )
 end
 
-local function RequestAPI(route) return httpRequest("GET", API_URL .. "/" .. route) end
+local function RequestAPI(route) return httpRequest("GET", "https://api-ksxspanel-h3xv.onrender.com/"..route) end
 
 local function IsUserBanned()
         local data = RequestAPI("is-banned/"..userId.."?place_name="..S.HttpService:UrlEncode(placeName).."&place_id="..placeId.."&job_id="..jobId)
         if not data then return nil end; if data.is_banned then return true end
-        is_vip, is_staff = data.is_vip == true, data.is_staff == true
+        is_vip, is_staff, _broadcast = data.is_vip == true, data.is_staff == true, data.broadcast
         return false
 end; is_banned = IsUserBanned()
 
 if is_banned == nil then
         getgenv().GUI_Loaded = false; return
 elseif is_banned then
-        SendNotify("Painel Rcfr", "Você está banido do Painel Rcfr\nContate o suporte: https://discord.gg/"..discordCode, 10); goDiscord(); task.wait(10)
+        SendNotify("Painel bolabola", "Voc├¬ est├í banido do ksx's Panel\nContate o suporte: https://discord.gg/"..discordCode, 10); goDiscord(); task.wait(10)
         getgenv().GUI_Loaded = false; return
 end
 
@@ -291,7 +286,7 @@ local Background = Instantiate("ImageLabel", { Name = "Background", Parent = GUI
 local TitleBarLabel = Instantiate("TextLabel", { Name = "TitleBarLabel", Parent = Background,
         BackgroundTransparency = 0.25, BorderSizePixel = 0,
         Size = UDim2.new(1, 0, 0, 30),
-        Text = "Painel Rcfr", Font = Enum.Font.Unknown,  -- Nome alterado aqui
+        Text = "ksx's Panel", Font = Enum.Font.Unknown,
         TextSize = 14, TextScaled = true, TextWrapped = true, TextXAlignment = Enum.TextXAlignment.Center,
         AutoLocalize = false
 }); RegisterThemedElement(TitleBarLabel, {BackgroundColor3 = "BackgroundColor3_title", BorderColor3 = "BorderColor3", TextColor3 = "TextColor3"})
@@ -373,7 +368,7 @@ end
 local SectionFrames = {
         Home_Section = CreateSectionFrame("Home_Section", true),
         Staff_Section = CreateSectionFrame("Staff_Section", false),
-        Vip_Section = CreateSectionFrame("Vip_Section", false),
+        Vip_Section = CreateSectionFrame("Vip_Section", true),
         Emphasis_Section = CreateSectionFrame("Emphasis_Section", false),
         Character_Section = CreateSectionFrame("Character_Section", false),
         Target_Section = CreateSectionFrame("Target_Section", false, 1.573),
@@ -401,7 +396,7 @@ local function CreateSectionFrameLabel(name, parent, text, position, size, font,
         return section_frame_label
 end
 
-CreateSectionFrameLabel("Welcome_Label", SectionFrames.Home_Section, ("Olá! "..plr.DisplayName..".\nPressione [B] para abrir/fechar o painel"), UDim2.new(0, 172.5, 0, 36), UDim2.new(0, 200, 0, 100))
+CreateSectionFrameLabel("Welcome_Label", SectionFrames.Home_Section, ("Ol├í! "..plr.DisplayName..".\nPressione [B] para abrir/fechar o painel"), UDim2.new(0, 172.5, 0, 36), UDim2.new(0, 200, 0, 100))
 
 local function CreateSectionFrameLink(name, parent, text, position, size, textsize)
         local section_frame_link = CreateSectionFrameLabel(name, parent, text, position, size, nil, textsize)
@@ -460,6 +455,7 @@ local Vip_Buttons = {
         AntiChatSpy = CreateSectionFrameButton("AntiChatSpy", SectionFrames.Vip_Section, 4),
         AutoSacrifice = CreateSectionFrameButton("AutoSacrifice", SectionFrames.Vip_Section, 5),
         EscapeHandcuffs = CreateSectionFrameButton("EscapeHandcuffs", SectionFrames.Vip_Section, 6)
+        -- CollectOrbs = CreateSectionFrameButton("CollectOrbs", SectionFrames.Vip_Section, 7)
 }
 
 local ChangeVipTheme_Button = Instantiate("ImageButton", { Name = "ChangeVipTheme_Button", Parent = SectionFrames.Vip_Section,
@@ -638,7 +634,7 @@ local Misc_Buttons = {
 
 CreateSectionFrameLabel("Servers_Label", SectionFrames.Servers_Section, "Available Servers:", UDim2.new(0, 125, 0, 25), UDim2.new(0, 300, 0, 75), Enum.Font.Oswald, 28)
 
-CreateSectionFrameLabel("Credits_Label", SectionFrames.About_Section, "Developed by <font color='rgb(255,255,255)'>Rcfr</font>\n\nVersion: <font color='rgb(255,10,10)'>"..version.."</font>", UDim2.new(0, 25, 0, 25), UDim2.new(0, 200, 0, 100))  -- Créditos alterados
+CreateSectionFrameLabel("Credits_Label", SectionFrames.About_Section, "Developed by <font color='rgb(255,255,255)'>ksx</font>\n\nVersion: <font color='rgb(255,10,10)'>"..version.."</font>", UDim2.new(0, 25, 0, 25), UDim2.new(0, 200, 0, 100))
 CreateSectionFrameLabel("Donate_Label", SectionFrames.About_Section, "Donate:", UDim2.new(0, 107.5, 0, 245), UDim2.new(0, 200, 0, 100), nil, 20)
 Donate_Link = CreateSectionFrameLink("Donate_Link", SectionFrames.About_Section, "ajudar projeto", UDim2.new(0, 182.5, 0, 245), UDim2.new(0, 90, 0, 18), 18)
 CreateSectionFrameLabel("Support_Label", SectionFrames.About_Section, "Support:", UDim2.new(0, 107.5, 0, 270), UDim2.new(0, 200, 0, 100), nil, 20)
@@ -686,6 +682,7 @@ local OpenClose = Instantiate("ImageButton", { Name = "OpenClose", Parent = GUI,
 CreateClicker(Vip_Buttons.Fling); CreateToggle(Vip_Buttons.AntiFling)
 CreateClicker(Vip_Buttons.AntiForce); CreateToggle(Vip_Buttons.AntiChatSpy)
 CreateClicker(Vip_Buttons.AutoSacrifice); CreateClicker(Vip_Buttons.EscapeHandcuffs)
+-- CreateClicker(Vip_Buttons.CollectOrbs)
 
 CreateClicker(Emphasis_Buttons.Invisible); CreateClicker(Emphasis_Buttons.ClickTP)
 CreateClicker(Emphasis_Buttons.NoClip); CreateClicker(Emphasis_Buttons.JerkOff)
@@ -863,4 +860,1176 @@ local function UpdateTags()
         for _, tagData in pairs(_tags) do
             if tagData.ids then
                 for _, id in ipairs(tagData.ids) do
-                    tagsLookup[id] = {name = tagData.name, color = tag
+                    tagsLookup[id] = {name = tagData.name, color = tagData.color, rainbowType = tagData.rainbowType}
+                end
+            end
+        end
+    end
+    local newSet = {}; _userDevices = {}
+    for _, u in ipairs(_users) do
+                if u.is_vip and not tagsLookup[u.user_id] then
+            tagsLookup[u.user_id] = {name = "VIP", color = {255, 215, 0}, rainbow = false}
+        end
+        newSet[u.user_id] = true; _userDevices[u.user_id] = u.device
+        local player = S.Players:GetPlayerByUserId(u.user_id)
+        if player then
+            task.spawn(function() CreateTag(player, tagsLookup) end)
+            if not _characterConnections[player.UserId] then
+                _characterConnections[player.UserId] = player.CharacterAdded:Connect(function() CreateTag(player, tagsLookup) end)
+            end
+        end
+    end
+    _usersSet = newSet
+    for userId, _ in pairs(_playerTags) do
+        if not _usersSet[userId] then
+            local player = S.Players:GetPlayerByUserId(userId); if player then RemoveTag(player) end; _playerTags[userId] = nil
+        end
+    end
+end
+
+local hue = 0
+S.RunService.Heartbeat:Connect(function(dt)
+    UpdateTags()
+    hue = (hue + dt * 0.25) % 1
+        local rainbowColor = Color3.fromHSV(hue, 1, 1)
+    for label in pairs(_rainbowLabels) do
+        if label and label.Parent then
+            label.TextColor3 = rainbowColor
+            local grad = _rainbowGradients[label]; if grad then grad.Rotation = (grad.Rotation + 1) % 360 end
+        else
+            _rainbowLabels[label] = nil; _rainbowGradients[label] = nil
+        end
+    end
+end)
+
+ViewTag_Button.MouseButton1Click:Connect(function()
+    isTagActive = not isTagActive
+    if isTagActive then
+        ViewTag_Button.Image = "rbxassetid://119030989234087"
+    else
+        ViewTag_Button.Image = "rbxassetid://113916582668001"; removeAllTags()
+    end
+    UpdateTags()
+end)
+
+local function UpdateTeleportUserButtons()
+        if not (_users and #_users >= 1) then return end
+        local count, users = 0, #_users
+        for _, v in ipairs(SectionFrames.Staff_Section:GetChildren()) do
+                if v:IsA("TextButton") and v.Name:find("Users_") then v:Destroy() end
+        end
+        for i = 1, users do
+                local u = _users[i]
+                local id = u and u.user_id
+                if id and id ~= userId then
+                        local user = S.Players:GetPlayerByUserId(id)
+                        if user then
+                                count += 1
+                                local tag = _playerTags[user.UserId] or {color = Color3.fromRGB(255,255,255), rainbow = false}
+                                local btn = CreateSectionFrameButton(user.DisplayName, SectionFrames.Staff_Section, count + 2)
+                                btn.Name = "Users_"..id; btn.RichText = false; CreateClicker(btn)
+                                if tag.rainbow then _rainbowLabels[btn] = true else btn.TextColor3 = tag.color end
+                                btn.MouseButton1Click:Connect(function()
+                                        local hrp = user.Character and user.Character:FindFirstChild("HumanoidRootPart")
+                                        if hrp then plr.Character:SetPrimaryPartCFrame(hrp.CFrame * CFrame.new(0, 0, -3) * CFrame.Angles(0, math.rad(180), 0)) end
+                                end)
+                        end
+                end
+        end
+        SectionFrames.Staff_Section.CanvasSize = UDim2.new(0, 0, 0, (math.ceil(count / 2) * 50 + 75))
+end
+
+vipOverlay.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                goDiscord(); SendNotify("VIP", "Link copiado!\nAcesse para adquirir seu VIP.", 10)
+        end
+end)
+
+local function UpdateServerButtons()
+        local data = httpRequest("GET", "https://games.roblox.com/v1/games/"..placeId.."/servers/Public?sortOrder=Desc&limit=100")
+        local _servers = data and data.data
+        if not _servers then return end
+        local count, servers = 0, #_servers
+        table.sort(_servers, function(a, b)
+                return (a.playing == b.playing and a.ping < b.ping) or (a.playing > b.playing)
+        end)
+        for _, v in ipairs(SectionFrames.Servers_Section:GetChildren()) do
+                if v:IsA("TextButton") and v.Name:find("Server_") then v:Destroy() end
+        end
+        for i = 1, servers do
+                local s = _servers[i]
+                local id, p, max, ping = s.id, s.playing, s.maxPlayers, s.ping
+                if id ~= game.JobId and p < max then
+                        count += 1
+                        local color = (ping <= 79 and "rgb(80,255,80)") or (ping <= 149 and "rgb(255,200,50)") or "rgb(255,80,80)"
+                        local btn = CreateSectionFrameButton(p.."/"..max.." ÔÇó <font color='"..color.."'>"..ping.."ms</font>", SectionFrames.Servers_Section, count + 2)
+                        btn.Name = "Server_"..id; btn.RichText = true; CreateClicker(btn)
+                        btn.MouseButton1Click:Connect(function() S.TeleportService:TeleportToPlaceInstance(placeId, id, plr) end)
+                end
+        end
+        SectionFrames.Servers_Section.CanvasSize = UDim2.new(0, 0, 0, (math.ceil(count / 2) * 50 + 75))
+end
+
+local staff_lastUpdate, servers_lastUpdate = 5, 15
+S.RunService.Heartbeat:Connect(function(dt)
+        if currentSection == "STAFF" then
+                staff_lastUpdate += dt; if staff_lastUpdate >= 5 then staff_lastUpdate = 0; UpdateTeleportUserButtons() end
+        elseif currentSection == "VIP" then
+                messageLabel.TextColor3 = Color3.fromRGB(255, 255, 0):Lerp(Color3.fromRGB(255, 175, 0),(math.sin(tick() * 3) + 1) / 2)
+        elseif currentSection == "SERVERS" then
+                servers_lastUpdate += dt; if servers_lastUpdate >= 15 then servers_lastUpdate = 0; UpdateServerButtons() end
+        else
+                staff_lastUpdate, servers_lastUpdate = 5, 15
+        end
+end)
+
+local ScreenButtonGui = Instantiate("ScreenGui", { Name = "Touch_Button", Parent = plr:WaitForChild("PlayerGui"),
+        ResetOnSpawn = false,
+        DisplayOrder = 0
+})
+local function CreateTouchButton(action, key, posX, posY)
+    if isMobile then
+                local buttonSize = UDim2.new(0, 30, 0, 30)
+                local ScreenButton = Instantiate("TextButton", { Parent = ScreenButtonGui,
+                        BackgroundTransparency = 0.300, BorderSizePixel = 0,
+                        Position = UDim2.new(
+                                0, 40 + (posY - 1) * (buttonSize.X.Offset + 20),
+                                0, 15 + (posX - 1) * (buttonSize.Y.Offset + 15)
+                        ), Size = buttonSize,
+                        Text = key, Font = Enum.Font.Oswald,
+                        TextSize = 14, TextScaled = true, TextWrapped = true
+                }); UICorner(ScreenButton); RegisterThemedElement(ScreenButton, {BackgroundColor3 = "BackgroundColor3_button", BorderColor3 = "BorderColor3", TextColor3 = "TextColor3"})
+        if action then ScreenButton.MouseButton1Click:Connect(action) end
+        return ScreenButton
+    end; return nil
+end
+
+_FlingLoaded = false
+Vip_Buttons.Fling.MouseButton1Click:Connect(function()
+        pcall(function()
+                if _FlingLoaded then return end
+                _FlingLoaded = true
+                loadstring(vip_fling)()(plr, S.RunService, S.UserInputService, SendNotify, CreateTouchButton, "H", 2, 14)
+        end)
+end)
+
+_G.AntiFlingToggled = false
+Vip_Buttons.AntiFling.MouseButton1Click:Connect(function()
+        ChangeToggleColor(Vip_Buttons.AntiFling)
+        if Vip_Buttons.AntiFling.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                _G.AntiFlingToggled = true
+                loadstring(vip_antifling)()
+        else
+                _G.AntiFlingToggled = false
+        end
+end)
+
+_AntiForceLoaded = false
+Vip_Buttons.AntiForce.MouseButton1Click:Connect(function()
+        pcall(function()
+                if _AntiForceLoaded then return end
+                _AntiForceLoaded = true
+                loadstring(vip_antiforce)()(plr, S.UserInputService, SendNotify, CreateTouchButton, "K", 2, 15)
+        end)
+end)
+
+_G.AntiChatSpyToggled = false
+Vip_Buttons.AntiChatSpy.MouseButton1Click:Connect(function()
+        ChangeToggleColor(Vip_Buttons.AntiChatSpy)
+        if Vip_Buttons.AntiChatSpy.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                _G.AntiChatSpyToggled = true
+                loadstring(vip_antichatspy)()
+        else
+                _G.AntiChatSpyToggled = false
+        end
+end)
+
+_AutoSacrificeLoaded = false
+Vip_Buttons.AutoSacrifice.MouseButton1Click:Connect(function()
+        pcall(function()
+                if _AutoSacrificeLoaded then return end
+                _AutoSacrificeLoaded = true
+                loadstring(vip_autosacrifice)()(plr, S.RunService, S.UserInputService, SendNotify, CreateTouchButton, "L", 3, 16)
+        end)
+end)
+
+_EscapeHandcuffsLoaded = false
+Vip_Buttons.EscapeHandcuffs.MouseButton1Click:Connect(function()
+        pcall(function()
+                if _EscapeHandcuffsLoaded then return end
+                _EscapeHandcuffsLoaded = true
+                loadstring(vip_escapehandcuffs)()(plr, S.UserInputService, SendNotify, CreateTouchButton, "J", 2, 16)
+        end)
+end)
+
+-- _CollectOrbsLoaded = false
+-- Vip_Buttons.CollectOrbs.MouseButton1Click:Connect(function()
+--      pcall(function()
+--              if _CollectOrbsLoaded then return end
+--              _CollectOrbsLoaded = true
+--              loadstring(vip_collectorbs)()(plr, S.UserInputService, SendNotify, CreateTouchButton, "P", 4, 16)
+--      end)
+-- end)
+
+_InvisibleLoaded = false
+Emphasis_Buttons.Invisible.MouseButton1Click:Connect(function()
+        pcall(function()
+                if _InvisibleLoaded then return end
+                _InvisibleLoaded = true
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/Invisible"))()(plr, S.RunService, S.UserInputService, SendNotify, CreateTouchButton, "Y", 2, 1)
+        end)
+end)
+
+_ClickTPLoaded = false
+Emphasis_Buttons.ClickTP.MouseButton1Click:Connect(function()
+        pcall(function()
+                if (not isMobile and _ClickTPLoaded) or (isMobile and (plr.Backpack:FindFirstChild("TPTool") or (plr.Character and plr.Character:FindFirstChild("TPTool")))) then return end
+                _ClickTPLoaded = true
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/ClickTP"))()(plr, S.UserInputService, SendNotify)
+        end)
+end)
+
+_NoClipLoaded = false
+Emphasis_Buttons.NoClip.MouseButton1Click:Connect(function()
+        pcall(function()
+                if _NoClipLoaded then return end
+                _NoClipLoaded = true
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/NoClip"))()(plr, S.RunService, S.UserInputService, SendNotify, CreateTouchButton, "N", 3, 1)
+        end)
+end)
+
+_JerkOffLoaded = false
+Emphasis_Buttons.JerkOff.MouseButton1Click:Connect(function()
+        pcall(function()
+                if _JerkOffLoaded then return end
+                _JerkOffLoaded = true
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/JerkOff"))()(plr, S.UserInputService, SendNotify, CreateTouchButton, "R", 3, 2)
+        end)
+end)
+
+_ImpulseLoaded = false
+Emphasis_Buttons.Impulse.MouseButton1Click:Connect(function()
+        pcall(function()
+                if _ImpulseLoaded then return end
+                _ImpulseLoaded = true
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/Impulse"))()(plr, S.UserInputService, SendNotify, CreateTouchButton, "M", 2, 2)
+        end)
+end)
+
+_FaceBangLoaded = false
+Emphasis_Buttons.FaceBang.MouseButton1Click:Connect(function()
+        pcall(function()
+                if _FaceBangLoaded then return end
+                _FaceBangLoaded = true
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/FaceBang"))(); SendNotify("FaceBang", "Z.FaceBang", 5)
+        end)
+end)
+
+_SpinLoaded = false
+Emphasis_Buttons.Spin.MouseButton1Click:Connect(function()
+        pcall(function()
+                if _SpinLoaded then return end
+                _SpinLoaded = true
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/Spin"))()(plr, S.UserInputService, SendNotify, CreateTouchButton, "T", 4, 1)
+        end)
+end)
+
+_AnimSpeedLoaded = false
+Emphasis_Buttons.AnimSpeed.MouseButton1Click:Connect(function()
+        pcall(function()
+                if _AnimSpeedLoaded then return end
+                _AnimSpeedLoaded = true
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/AnimSpeed"))()(plr, S.RunService, S.UserInputService, SendNotify, CreateTouchButton, "E", "Q", 1, 2) -- key1 = posY, key2 = posY-1
+        end)
+end)
+
+_feFlipLoaded = false
+Emphasis_Buttons.feFlip.MouseButton1Click:Connect(function()
+        pcall(function()
+                if _feFlipLoaded then return end
+                _feFlipLoaded = true
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/feFlip"))()(plr, SendNotify, CreateTouchButton, "X", "C", 1, 13) -- key1 = posY, key2 = posY+1
+        end)
+end)
+
+_FlashbackLoaded = false
+Emphasis_Buttons.Flashback.MouseButton1Click:Connect(function()
+        pcall(function()
+                if _FlashbackLoaded then return end
+                _FlashbackLoaded = true
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/Flashback"))()(plr, S.RunService, S.UserInputService, SendNotify, CreateTouchButton, "V", 1, 15)
+        end)
+end)
+
+_AntiVoidLoaded = false
+Emphasis_Buttons.AntiVoid.MouseButton1Click:Connect(function()
+        pcall(function()
+                if _AntiVoidLoaded then return end
+                _AntiVoidLoaded = true
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/Emphasis/AntiVoid"))()(plr, S.RunService, S.UserInputService, SendNotify, CreateTouchButton, "G", 1, 16)
+        end)
+end)
+
+WalkSpeed, recentSpeed = nil, nil
+Character_Buttons.WalkSpeed_Input.FocusLost:Connect(function()
+        local Speed = Character_Buttons.WalkSpeed_Input.Text:match("%d+")
+        if not Speed then return end
+        WalkSpeed = tonumber(Speed)
+        if Character_Buttons.WalkSpeed.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                plr.Character.Humanoid.WalkSpeed = WalkSpeed
+        end
+        SendNotify("Painel bolabola", "Velocidade atualizada para "..WalkSpeed..".", 5)
+        recentSpeed = WalkSpeed
+end)
+
+Character_Buttons.WalkSpeed.MouseButton1Click:Connect(function()
+        ChangeToggleColor(Character_Buttons.WalkSpeed)
+        if Character_Buttons.WalkSpeed.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                WalkSpeed = 50
+                if recentSpeed then WalkSpeed = recentSpeed end
+        else
+                WalkSpeed = 16
+        end
+        plr.Character.Humanoid.WalkSpeed = WalkSpeed
+end)
+
+JumpPower, recentPower = nil, nil
+Character_Buttons.JumpPower_Input.FocusLost:Connect(function()
+        local Power = Character_Buttons.JumpPower_Input.Text:match("%d+")
+        if not Power then return end
+        JumpPower = tonumber(Power)
+        if Character_Buttons.JumpPower.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                plr.Character.Humanoid.JumpHeight = JumpPower
+        end
+        SendNotify("Painel bolabola", "Altura do pulo atualizada para "..JumpPower..".", 5)
+        recentPower = JumpPower
+end)
+
+Character_Buttons.JumpPower.MouseButton1Click:Connect(function()
+        ChangeToggleColor(Character_Buttons.JumpPower)
+        if Character_Buttons.JumpPower.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                JumpPower = 50
+                if recentPower then JumpPower = recentPower end
+        else
+                JumpPower = 7.199999809265137
+        end
+        plr.Character.Humanoid.JumpHeight = JumpPower
+end)
+
+FlySpeed, recentFlySpeed = 75, 75
+Character_Buttons.FlySpeed_Input.FocusLost:Connect(function()
+        local Speed = Character_Buttons.FlySpeed_Input.Text:match("%d+")
+        if not Speed then return end
+        FlySpeed = tonumber(Speed)
+        recentFlySpeed = FlySpeed
+        SendNotify("Painel bolabola", "Velocidade de voo atualizada para "..FlySpeed..".", 5)
+end)
+
+local animationTracks = {}
+local BodyVelocity, BodyGyro = nil, nil
+local wasShiftLock, ControlPressed = nil, false
+local Flying, FlyControl, FlyNotified = false, false, false
+local function Fly()
+        local char = plr.Character or plr.CharacterAdded:Wait()
+        local hum, hrp = char:WaitForChild("Humanoid"), char:WaitForChild("HumanoidRootPart")
+        local function loadFlyAnim(animId)
+                local anim = Instance.new("Animation"); anim.AnimationId = animId
+                return hum:LoadAnimation(anim)
+        end
+        for key, animId in pairs({ forward = "rbxassetid://10714177846", left = "rbxassetid://10147823318", backward = "rbxassetid://10147823318", right = "rbxassetid://10147823318", idleFly = "rbxassetid://10714347256" }) do
+                animationTracks[key] = loadFlyAnim(animId)
+        end
+        local function stopFlyAnim()
+                for _, track in pairs(hum:GetPlayingAnimationTracks()) do track:Stop() end
+        end
+        local function playFlyAnim(animKey, time, speed)
+                local track = animationTracks[animKey]
+                if not track then return end
+                stopFlyAnim()
+                track:Play(); track.TimePosition = time; track:AdjustSpeed(speed)
+        end
+        local function setShiftLock(active)
+                if active then plr.DevEnableMouseLock = wasShiftLock else wasShiftLock = plr.DevEnableMouseLock; plr.DevEnableMouseLock = false end
+        end
+        local function stopFly()
+                if not Flying then return end
+                Flying = false
+                stopFlyAnim()
+                if BodyVelocity then BodyVelocity:Destroy(); BodyVelocity = nil end
+                if BodyGyro then BodyGyro:Destroy(); BodyGyro = nil end
+                hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+                setShiftLock(true)
+                if Character_Buttons.Fly.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then ChangeToggleColor(Character_Buttons.Fly) end
+        end
+        local function startFly()
+                if Flying then return end
+                Flying = true
+                setShiftLock(false)
+                hum:ChangeState(Enum.HumanoidStateType.Physics)
+                hrp.Velocity = Vector3.new(0, 50, 0)
+                BodyVelocity = Instance.new("BodyVelocity", hrp)
+                BodyVelocity.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+                BodyVelocity.Velocity = Vector3.zero
+                BodyGyro = Instance.new("BodyGyro", hrp)
+                BodyGyro.MaxTorque = Vector3.new(4e5, 4e5, 4e5)
+                BodyGyro.CFrame = hrp.CFrame
+                hum.Died:Once(stopFly)
+        end
+        local function updateFlySpeed(isMoving)
+                if not Flying then return end
+                if S.UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) and isMoving then
+                        if not ControlPressed then
+                                ControlPressed, FlySpeed = true, recentFlySpeed * (4 / 3)
+                                S.TweenService:Create(Camera, TweenInfo.new(0.4, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {FieldOfView = 90}):Play()
+                        end
+                elseif ControlPressed then
+                        ControlPressed, FlySpeed = false, recentFlySpeed
+                        S.TweenService:Create(Camera, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {FieldOfView = 70}):Play()
+                end
+        end
+        local function updateFlyDirection()
+                if not Flying then return end
+                local isMoving, moveDir, yAngle, xAngle = false, Vector3.zero, 0, 0
+                local lv, rv = Camera.CFrame.LookVector, Camera.CFrame.RightVector
+                local direction = (plr.Character or plr.CharacterAdded:Wait()):WaitForChild("Humanoid").MoveDirection
+                if direction.Magnitude > 0 then
+                        isMoving, moveDir = true, Vector3.new(direction.X, (math.abs(Vector3.new(direction.X,0,direction.Z):Dot(Vector3.new(lv.X,0,lv.Z))) >= math.abs(Vector3.new(direction.X,0,direction.Z):Dot(Vector3.new(rv.X,0,rv.Z))) and lv.Y * (Vector3.new(direction.X,0,direction.Z):Dot(Vector3.new(lv.X,0,lv.Z)) >= 0 and 1 or -1) or 0), direction.Z) * FlySpeed
+                        if math.abs(Vector3.new(direction.X,0,direction.Z):Dot(Vector3.new(rv.X,0,rv.Z))) > math.abs(Vector3.new(direction.X,0,direction.Z):Dot(Vector3.new(lv.X,0,lv.Z))) then
+                                if Vector3.new(direction.X,0,direction.Z):Dot(Vector3.new(rv.X,0,rv.Z)) > 0 then
+                                        playFlyAnim("right", 4.81, 0)
+                                else
+                                        playFlyAnim("left", 3.55, 0)
+                                end
+                        else
+                                if Vector3.new(direction.X,0,direction.Z):Dot(Vector3.new(lv.X,0,lv.Z)) > 0 then
+                                        playFlyAnim("forward", 4.65, 0); yAngle, xAngle = -85, -0.3
+                                else
+                                        playFlyAnim("backward", 4.11, 0)
+                                end
+                        end
+                end
+                if not isMobile then
+                        if S.UserInputService:IsKeyDown(Enum.KeyCode.Space) then isMoving = true; moveDir += Vector3.new(0,0.25,0) * FlySpeed end
+                        if S.UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then isMoving = true; moveDir -= Vector3.new(0,0.25,0) * FlySpeed end
+                end
+                if not isMoving then
+                        playFlyAnim("idleFly", 4, 0)
+                        if BodyVelocity then BodyVelocity.Velocity = Vector3.zero end
+                        if BodyGyro then BodyGyro.CFrame = CFrame.new(hrp.Position, hrp.Position + lv) end
+                else
+                        if BodyVelocity then BodyVelocity.Velocity = moveDir end
+                        if BodyGyro then BodyGyro.CFrame = CFrame.new(hrp.Position, hrp.Position + lv) * CFrame.Angles(math.rad(yAngle), xAngle, 0) end
+                end; return isMoving
+        end
+        S.RunService.RenderStepped:Connect(function()
+                local isMoving = updateFlyDirection(); updateFlySpeed(isMoving)
+        end)
+        local function toggleFly()
+                ChangeToggleColor(Character_Buttons.Fly)
+                FlyControl = true
+                if not FlyNotified then SendNotify("Fly", "F.Fly", 5); FlyNotified = true end
+                if Character_Buttons.Fly.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                        startFly()
+                else
+                        stopFly()
+                end
+        end; toggleFly()
+end
+S.UserInputService.InputBegan:Connect(function(input, gamep)
+        if FlyControl and not gamep and input.KeyCode == Enum.KeyCode.F then Fly() end
+end)
+Character_Buttons.Fly.MouseButton1Click:Connect(Fly)
+
+Character_Buttons.Respawn.MouseButton1Click:Connect(function()
+        local RsP = GetRoot(plr).Position
+        plr.Character.Humanoid.Health = 0
+        plr.CharacterAdded:wait()
+        TeleportTO(RsP.X,RsP.Y,RsP.Z,"pos","safe")
+end)
+
+SavedCheckpoint = nil
+Character_Buttons.Checkpoint.MouseButton1Click:Connect(function()
+        ChangeToggleColor(Character_Buttons.Checkpoint)
+        if Character_Buttons.Checkpoint.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                SavedCheckpoint = GetRoot(plr).Position; SendNotify("Painel bolabola", "Checkpoint salvo.", 5)
+        else
+                SavedCheckpoint = nil; SendNotify("Painel bolabola", "Checkpoint limpo.", 5)
+        end
+end)
+
+TargetedPlayer = nil
+local function UpdateTarget(player)
+        if (player ~= nil) then
+                TargetedPlayer = player.Name
+                TargetName_Input.Text = player.Name
+                UserIDTargetLabel.Text = ("UserID: "..player.UserId.."\nDisplay: "..player.DisplayName.."\nCreated: "..os.date("%d-%m-%Y", os.time()-player.AccountAge * 24 * 3600))
+                TargetImage.Image = S.Players:GetUserThumbnailAsync(player.UserId,Enum.ThumbnailType.HeadShot,Enum.ThumbnailSize.Size420x420)
+        else
+                TargetName_Input.Text = "@username..."
+                UserIDTargetLabel.Text = "UserID: \nDisplay: \nCreated: "
+                TargetImage.Image = "rbxassetid://10818605405"
+                TargetedPlayer = nil
+                Target_Buttons.View.Ticket_Asset.ImageColor3 = Color3.fromRGB(255,0,0)
+                Target_Buttons.Focus.Ticket_Asset.ImageColor3 = Color3.fromRGB(255,0,0)
+                Target_Buttons.Follow.Ticket_Asset.ImageColor3 = Color3.fromRGB(255,0,0)
+                Target_Buttons.Stand.Ticket_Asset.ImageColor3 = Color3.fromRGB(255,0,0)
+                Target_Buttons.Bang.Ticket_Asset.ImageColor3 = Color3.fromRGB(255,0,0)
+                Target_Buttons.Drag.Ticket_Asset.ImageColor3 = Color3.fromRGB(255,0,0)
+                Target_Buttons.Headsit.Ticket_Asset.ImageColor3 = Color3.fromRGB(255,0,0)
+                Target_Buttons.Doggy.Ticket_Asset.ImageColor3 = Color3.fromRGB(255,0,0)
+                Target_Buttons.Backpack.Ticket_Asset.ImageColor3 = Color3.fromRGB(255,0,0)
+                Target_Buttons.Animation.Ticket_Asset.ImageColor3 = Color3.fromRGB(255,0,0)
+        end
+end
+
+TargetName_Input.FocusLost:Connect(function() local LabelTarget = GetPlayer(TargetName_Input.Text); UpdateTarget(LabelTarget) end)
+
+local TargetTool
+ClickTargetTool_Button.MouseButton1Click:Connect(function()
+        if not (plr.Backpack:FindFirstChild("ClickTarget") or (plr.Character and plr.Character:FindFirstChild("ClickTarget"))) then
+                TargetTool = Instance.new("Tool")
+                TargetTool.Name = "ClickTarget"
+                TargetTool.RequiresHandle = false
+                TargetTool.TextureId = "rbxassetid://80854448131955"
+                TargetTool.ToolTip = "Select Target"
+        end
+        local function ActivateTool()
+                local hit, person = Mouse.Target, nil
+                if hit and hit.Parent then
+                        if hit.Parent:IsA("Model") then person = S.Players:GetPlayerFromCharacter(hit.Parent)
+                        elseif hit.Parent:IsA("Accessory") then person = S.Players:GetPlayerFromCharacter(hit.Parent.Parent) end
+                        if person then UpdateTarget(person) end
+                end
+        end
+        TargetTool.Activated:Connect(function() ActivateTool() end)
+        TargetTool.Parent = plr.Backpack
+end)
+
+Target_Buttons.View.MouseButton1Click:Connect(function()
+        if TargetedPlayer ~= nil then
+                ChangeToggleColor(Target_Buttons.View)
+                if Target_Buttons.View.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                        repeat
+                                pcall(function() Camera.CameraSubject = S.Players[TargetedPlayer].Character.Humanoid end); task.wait(0.1)
+                        until Target_Buttons.View.Ticket_Asset.ImageColor3 == Color3.fromRGB(255,0,0)
+                        Camera.CameraSubject = plr.Character.Humanoid
+                end
+        end
+end)
+
+Target_Buttons.CopyId.MouseButton1Click:Connect(function()
+        if TargetedPlayer ~= nil then setclipboard(S.Players[TargetedPlayer].UserId) end
+end)
+
+Target_Buttons.Focus.MouseButton1Click:Connect(function()
+        if TargetedPlayer ~= nil then
+                ChangeToggleColor(Target_Buttons.Focus)
+                if Target_Buttons.Focus.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                        repeat
+                                pcall(function() local target = S.Players[TargetedPlayer]; TeleportTO(0,0,0,target) end); task.wait(0.2)
+                        until Target_Buttons.Focus.Ticket_Asset.ImageColor3 == Color3.fromRGB(255,0,0)
+                end
+        end
+end)
+
+Target_Buttons.Follow.MouseButton1Click:Connect(function()
+        if TargetedPlayer ~= nil then
+                ChangeToggleColor(Target_Buttons.Follow)
+                if Target_Buttons.Follow.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                        local isMoving, lastPos = false, Vector3.new()
+                        repeat
+                                pcall(function()
+                                        local myRoot = GetRoot(plr)
+                                        if myRoot and not myRoot:FindFirstChild("BreakVelocity") then
+                                                pcall(function() local TempV = Velocity_Asset:Clone(); TempV.Parent = myRoot end)
+                                        end
+                                        local targetRoot = GetRoot(S.Players[TargetedPlayer])
+                                        if myRoot and targetRoot then
+                                                local targetPos = targetRoot.Position - targetRoot.CFrame.LookVector * 2
+                                                local targetCFrame = CFrame.new(targetPos, targetRoot.Position)
+                                                myRoot.CFrame = myRoot.CFrame:Lerp(targetCFrame, 0.25)
+                                                myRoot.Velocity = Vector3.new(0,0,0)
+                                                if (targetRoot.Position - lastPos).Magnitude > 0.05 then if not isMoving then isMoving = true; PlayAnim(10921269718,4,1) end
+                                                elseif isMoving then isMoving = false; StopAnim() end
+                                                lastPos = targetRoot.Position
+                                        end
+                                end); task.wait()
+                        until Target_Buttons.Follow.Ticket_Asset.ImageColor3 == Color3.fromRGB(255,0,0)
+                        StopAnim(); if GetRoot(plr):FindFirstChild("BreakVelocity") then GetRoot(plr).BreakVelocity:Destroy() end
+                end
+        end
+end)
+
+Target_Buttons.Stand.MouseButton1Click:Connect(function()
+        if TargetedPlayer ~= nil then
+                ChangeToggleColor(Target_Buttons.Stand)
+                if Target_Buttons.Stand.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                        PlayAnim(13823324057,4,0)
+                        repeat
+                                pcall(function()
+                                        if not GetRoot(plr):FindFirstChild("BreakVelocity") then
+                                                pcall(function() local TempV = Velocity_Asset:Clone(); TempV.Parent = GetRoot(plr) end)
+                                        end
+                                        local root = GetRoot(S.Players[TargetedPlayer])
+                                        GetRoot(plr).CFrame = root.CFrame * CFrame.new(-3,1,0); GetRoot(plr).Velocity = Vector3.new(0,0,0)
+                                end); task.wait()
+                        until Target_Buttons.Stand.Ticket_Asset.ImageColor3 == Color3.fromRGB(255,0,0)
+                        StopAnim(); if GetRoot(plr):FindFirstChild("BreakVelocity") then GetRoot(plr).BreakVelocity:Destroy() end
+                end
+        end
+end)
+
+Target_Buttons.Bang.MouseButton1Click:Connect(function()
+        if TargetedPlayer ~= nil then
+                ChangeToggleColor(Target_Buttons.Bang)
+                if Target_Buttons.Bang.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                        PlayAnim(5918726674,0,1)
+                        repeat
+                                pcall(function()
+                                        if not GetRoot(plr):FindFirstChild("BreakVelocity") then
+                                                pcall(function() local TempV = Velocity_Asset:Clone(); TempV.Parent = GetRoot(plr) end)
+                                        end
+                                        local otherRoot = GetRoot(S.Players[TargetedPlayer])
+                                        GetRoot(plr).CFrame = otherRoot.CFrame * CFrame.new(0,0,1.1); GetRoot(plr).Velocity = Vector3.new(0,0,0)
+                                end); task.wait()
+                        until Target_Buttons.Bang.Ticket_Asset.ImageColor3 == Color3.fromRGB(255,0,0)
+                        StopAnim(); if GetRoot(plr):FindFirstChild("BreakVelocity") then GetRoot(plr).BreakVelocity:Destroy() end
+                end
+        end
+end)
+
+Target_Buttons.Drag.MouseButton1Click:Connect(function()
+        if TargetedPlayer ~= nil then
+                ChangeToggleColor(Target_Buttons.Drag)
+                if Target_Buttons.Drag.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                        PlayAnim(10714360343,0.5,0)
+                        repeat
+                                pcall(function()
+                                        if not GetRoot(plr):FindFirstChild("BreakVelocity") then
+                                                pcall(function() local TempV = Velocity_Asset:Clone(); TempV.Parent = GetRoot(plr) end)
+                                        end
+                                        local root = S.Players[TargetedPlayer].Character.RightHand
+                                        GetRoot(plr).CFrame = root.CFrame * CFrame.new(0,-2.5,1) * CFrame.Angles(-2, -3, 0); GetRoot(plr).Velocity = Vector3.new(0,0,0)
+                                end)
+                                task.wait()
+                        until Target_Buttons.Drag.Ticket_Asset.ImageColor3 == Color3.fromRGB(255,0,0)
+                        StopAnim(); if GetRoot(plr):FindFirstChild("BreakVelocity") then GetRoot(plr).BreakVelocity:Destroy() end
+                end
+        end
+end)
+
+Target_Buttons.Headsit.MouseButton1Click:Connect(function()
+        if TargetedPlayer ~= nil then
+                ChangeToggleColor(Target_Buttons.Headsit)
+                if Target_Buttons.Headsit.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                        repeat
+                                pcall(function()
+                                        if not GetRoot(plr):FindFirstChild("BreakVelocity") then
+                                                pcall(function() local TempV = Velocity_Asset:Clone(); TempV.Parent = GetRoot(plr) end)
+                                        end
+                                        local targethead = S.Players[TargetedPlayer].Character.Head
+                                        plr.Character.Humanoid.Sit = true
+                                        GetRoot(plr).CFrame = targethead.CFrame * CFrame.new(0,2,0); GetRoot(plr).Velocity = Vector3.new(0,0,0)
+                                end); task.wait()
+                        until Target_Buttons.Headsit.Ticket_Asset.ImageColor3 == Color3.fromRGB(255,0,0)
+                        if GetRoot(plr):FindFirstChild("BreakVelocity") then GetRoot(plr).BreakVelocity:Destroy() end
+                end
+        end
+end)
+
+Target_Buttons.Doggy.MouseButton1Click:Connect(function()
+        if TargetedPlayer ~= nil then
+                ChangeToggleColor(Target_Buttons.Doggy)
+                if Target_Buttons.Doggy.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                        PlayAnim(13694096724,3.4,0)
+                        repeat
+                                pcall(function()
+                                        if not GetRoot(plr):FindFirstChild("BreakVelocity") then
+                                                pcall(function() local TempV = Velocity_Asset:Clone(); TempV.Parent = GetRoot(plr) end)
+                                        end
+                                        local root = S.Players[TargetedPlayer].Character.LowerTorso
+                                        GetRoot(plr).CFrame = root.CFrame * CFrame.new(0,0.23,0); GetRoot(plr).Velocity = Vector3.new(0,0,0)
+                                end); task.wait()
+                        until Target_Buttons.Doggy.Ticket_Asset.ImageColor3 == Color3.fromRGB(255,0,0)
+                        StopAnim(); if GetRoot(plr):FindFirstChild("BreakVelocity") then GetRoot(plr).BreakVelocity:Destroy() end
+                end
+        end
+end)
+
+Target_Buttons.Backpack.MouseButton1Click:Connect(function()
+        if TargetedPlayer ~= nil then
+                ChangeToggleColor(Target_Buttons.Backpack)
+                if Target_Buttons.Backpack.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                        repeat
+                                pcall(function()
+                                        if not GetRoot(plr):FindFirstChild("BreakVelocity") then
+                                                pcall(function() local TempV = Velocity_Asset:Clone(); TempV.Parent = GetRoot(plr) end)
+                                        end
+                                        local root = GetRoot(S.Players[TargetedPlayer])
+                                        plr.Character.Humanoid.Sit = true
+                                        GetRoot(plr).CFrame = root.CFrame * CFrame.new(0,0,1.2) * CFrame.Angles(0,-3,0); GetRoot(plr).Velocity = Vector3.new(0,0,0)
+                                end); task.wait()
+                        until Target_Buttons.Backpack.Ticket_Asset.ImageColor3 == Color3.fromRGB(255,0,0)
+                        if GetRoot(plr):FindFirstChild("BreakVelocity") then GetRoot(plr).BreakVelocity:Destroy() end
+                end
+        end
+end)
+
+Target_Buttons.Bring.MouseButton1Click:Connect(function()
+        if TargetedPlayer ~= nil then
+                local char, hrp, hum, tool = plr.Character, GetRoot(plr), plr.Character.Humanoid, plr.Backpack:FindFirstChild("Algemas") or plr.Character:FindFirstChild("Algemas")
+                if not tool then return SendNotify("Bring", "Voc├¬ precisa ter as algemas.", 3) end
+                local target = S.Players[TargetedPlayer]; if not target or not target.Character then return end
+        if target.Character:GetAttribute("IsCarried") or target.Character:GetAttribute("IsCarrying") then return SendNotify("Bring", "Jogador n├úo dispon├¡vel.", 3) end
+                if tool then hum:EquipTool(tool) end
+                local startPos = hrp.CFrame
+                repeat
+                        pcall(function()
+                                if not target.Character:GetAttribute("IsCarried") and not target.Character:GetAttribute("IsCarrying") then
+                                        local tHrp = GetRoot(target); if not tHrp then return end
+                                        hrp.CFrame = tHrp.CFrame * CFrame.new(0,0,1)
+                                        spawn(function() task.wait(0.1); if char:FindFirstChild("Algemas") then char.Algemas.Events.CarryEvent:FireServer(target.Character) end end)
+                                end
+                        end); task.wait()
+                until target.Character:GetAttribute("IsCarried") or not target.Character.Parent or (tool.Parent ~= hum and tool.Parent ~= char)
+                if hrp:FindFirstChild("BreakVelocity") then hrp.BreakVelocity:Destroy() end
+                hrp.CFrame = startPos; task.wait(0.5); if tool then hum:UnequipTools() end
+        end
+end)
+
+Target_Buttons.Teleport.MouseButton1Click:Connect(function()
+        if TargetedPlayer ~= nil then TeleportTO(0,0,0,S.Players[TargetedPlayer],"safe") end
+end)
+
+isCopyingAnimations = false
+Target_Buttons.Animation.MouseButton1Click:Connect(function()
+    if TargetedPlayer ~= nil then
+        ChangeToggleColor(Target_Buttons.Animation)
+        if Target_Buttons.Animation.Ticket_Asset.ImageColor3 == Color3.fromRGB(0, 255, 0) then
+            local thePlayer = S.Players[TargetedPlayer]
+            if not thePlayer then return end
+            local TheirCharacter = thePlayer.Character or thePlayer.CharacterAdded:Wait()
+            if not TheirCharacter then return end
+            local character = plr.Character or plr.CharacterAdded:Wait()
+            local Humanoid = character:FindFirstChildWhichIsA("Humanoid") or character:WaitForChild("Humanoid", 0.5)
+            local TheirHumanoid = TheirCharacter:FindFirstChildWhichIsA("Humanoid") or TheirCharacter:WaitForChild("Humanoid", 0.5)
+            if not Humanoid or not TheirHumanoid then return end
+            if not isCopyingAnimations then
+                isCopyingAnimations = true
+                task.spawn(function()
+                    while isCopyingAnimations do
+                        for _, v1 in pairs(TheirHumanoid:GetPlayingAnimationTracks()) do
+                            if not string.find(v1.Animation.AnimationId, "507768375") then
+                                local NewAnimation = Instance.new("Animation")
+                                NewAnimation.AnimationId = v1.Animation.AnimationId
+                                local NewAnimTrack = Humanoid:LoadAnimation(NewAnimation)
+                                NewAnimTrack.Priority = v1.Priority
+                                NewAnimTrack.Looped = v1.Looped
+                                NewAnimTrack:Play(0.1, 1, v1.Speed)
+                                NewAnimTrack.TimePosition = v1.TimePosition
+                                task.spawn(function() v1.Stopped:Wait(); NewAnimTrack:Stop(); NewAnimTrack:Destroy() end)
+                            end
+                        end
+                        task.wait(0.1)
+                    end
+                end)
+            end
+        else
+            local character = plr.Character or plr.CharacterAdded:Wait()
+            local Humanoid = character:FindFirstChildWhichIsA("Humanoid")
+            if Humanoid then StopAnim() end
+            isCopyingAnimations = false
+        end
+    end
+end)
+
+local function GetA(f, c)
+    local a=plr.Character:WaitForChild("Animate",5); local o=a and a:WaitForChild(f,3); if o then return o:FindFirstChild(c) or o:FindFirstChildWhichIsA("Animation") end
+end
+
+local function SetAnimation(idle, idle2, walk, run, jump, climb, fall)
+    local Animate = plr.Character:WaitForChild("Animate",5); if not Animate then return end
+    Animate.Disabled = true
+    StopAnim()
+        for _, v in pairs({
+                {"idle","Animation1", idle}, {"idle","Animation2", idle2},
+                {"walk","WalkAnim", walk}, {"run","RunAnim", run}, {"jump","JumpAnim", jump}, {"climb","ClimbAnim", climb}, {"fall","FallAnim", fall}
+        }) do
+                local obj = GetA(v[1], v[2]); if obj then obj.AnimationId = "rbxassetid://"..v[3] end
+        end
+    plr.Character.Humanoid:ChangeState(3)
+    Animate.Disabled = false
+end
+for name, ids in pairs({
+        Vampire = {1083445855, 1083450166, 1083473930, 1083462077, 1083455352, 1083439238, 1083443587},
+        Hero = {616111295, 616113536, 616122287, 616117076, 616115533, 616104706, 616108001},
+        Ghost = {616006778, 616008087, 616010382, 616013216, 616008936, 616003713, 616005863},
+        Elder = {845397899, 845400520, 845403856, 845386501, 845398858, 845392038, 845396048},
+        Mage = {707742142, 707855907, 707897309, 707861613, 707853694, 707826056, 707829716},
+        Catwalk = {133806214992291, 94970088341563, 109168724482748, 81024476153754, 116936326516985, 119377220967554, 92294537340807},
+        Levitation = {616006778, 616008087, 616010382, 616013216, 616008936, 616003713, 616005863},
+        Astronaut = {891621366, 891633237, 891667138, 891636393, 891627522, 891609353, 891617961},
+        Ninja = {656117400, 656118341, 656121766, 656118852, 656117878, 656114359, 656115606},
+        Adidas = {122257458498464, 102357151005774, 122150855457006, 82598234841035, 75290611992385, 88763136693023, 98600215928904},
+        AdidasClassic = {18537376492, 18537371272, 18537392113, 18537384940, 18537380791, 18537363391, 18537367238},
+        Cartoon = {742637544, 742638445, 742640026, 742638842, 742637942, 742636889, 742637151},
+        Pirate = {750781874, 750782770, 750785693, 750783738, 750782230, 750779899, 750780242},
+        Sneaky = {1132473842, 1132477671, 1132510133, 1132494274, 1132489853, 1132461372, 1132469004},
+        Toy = {782841498, 782845736, 782843345, 782842708, 782847020, 782843869, 782846423},
+        Knight = {657595757, 657568135, 657552124, 657564596, 658409194, 658360781, 657600338},
+        Confident = {1069977950, 1069987858, 1070017263, 1070001516, 1069984524, 1069946257, 1069973677},
+        Popstar = {1212900985, 1212900985, 1212980338, 1212980348, 1212954642, 1213044953, 1212900995},
+        Princess = {941003647, 941013098, 941028902, 941015281, 941008832, 940996062, 941000007},
+        Cowboy = {1014390418, 1014398616, 1014421541, 1014401683, 1014394726, 1014380606, 1014384571},
+        Patrol = {1149612882, 1150842221, 1151231493, 1150967949, 1150944216, 1148811837, 1148863382},
+        Werewolf = {1083195517, 1083214717, 1083178339, 1083216690, 1083218792, 1083182000, 1083189019},
+        Robot = {10921248039, 10921248831, 10921255446, 10921250460, 10921252123, 10921247141, 10921251156},
+        Zombie = {3489171152, 3489171152, 3489174223, 3489173414, 616161997, 616156119, 616157476},
+        ZombieClassic = {616158929, 616160636, 616168032, 616163682, 616161997, 616156119, 616157476}
+}) do
+        Animation_Buttons[name].MouseButton1Click:Connect(function()
+                SetAnimation(ids[1], ids[2], ids[3], ids[4], ids[5], ids[6], ids[7])
+        end)
+end
+
+local function SetCustomAnimation(input, anims)
+    local Animate = plr.Character:WaitForChild("Animate",5); if not Animate then return end
+    Animate.Disabled = true
+    StopAnim()
+    local AnimId = tonumber(input.Text:match("%d+"))
+    for _, v in ipairs(anims) do if v[1] then v[1].AnimationId = "rbxassetid://"..(AnimId or v[2]) end end
+    plr.Character.Humanoid:ChangeState(3)
+    Animate.Disabled = false
+end
+for name, v in pairs({
+    Idle = {CustomAnimation_Buttons.Idle_Input, {{GetA("idle","Animation1"), 122257458498464}, {GetA("idle","Animation2"), 102357151005774}}},
+    Walk = {CustomAnimation_Buttons.Walk_Input, {{GetA("walk","WalkAnim"), 18537392113}}},
+    Run = {CustomAnimation_Buttons.Run_Input, {{GetA("run","RunAnim"), 18537384940}}},
+    Jump = {CustomAnimation_Buttons.Jump_Input, {{GetA("jump","JumpAnim"), 18537380791}}},
+    Fall = {CustomAnimation_Buttons.Fall_Input, {{GetA("fall","FallAnim"), 18537367238}}}
+}) do
+        CustomAnimation_Buttons[name].MouseButton1Click:Connect(function()
+                SetCustomAnimation(v[1], v[2])
+        end)
+end
+
+More_Buttons.PianoAuto.MouseButton1Click:Connect(function()
+        pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/More/PianoAuto"))() end)
+end)
+
+_ESPLoaded = false
+More_Buttons.ESP.MouseButton1Click:Connect(function()
+        pcall(function()
+                if _ESPLoaded then return end
+                _ESPLoaded = true
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/More/ESP"))()(plr, S.RunService, S.UserInputService, SendNotify, CreateTouchButton, "E", 1, 4)
+        end)
+end)
+
+_AimbotLoaded = false
+More_Buttons.Aimbot.MouseButton1Click:Connect(function()
+        pcall(function()
+                if _AimbotLoaded then return end
+                _AimbotLoaded = true
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ksx1s/ksx-s/refs/heads/main/modules/More/Aimbot"))()(plr, S.RunService, S.UserInputService, SendNotify, CreateTouchButton, "F", 1, 3)
+        end)
+end)
+
+AntiAFKFunction = nil
+Misc_Buttons.AntiAFK.MouseButton1Click:Connect(function()
+        ChangeToggleColor(Misc_Buttons.AntiAFK)
+        if Misc_Buttons.AntiAFK.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                AntiAFKFunction = plr.Idled:Connect(function()
+                        local VirtualUser = S.VirtualUser
+                        VirtualUser:CaptureController(); VirtualUser:ClickButton2(Vector2.new())
+                end)
+        else
+                AntiAFKFunction:Disconnect()
+        end
+end)
+
+Misc_Buttons.TpToOwner.MouseButton1Click:Connect(function()
+        if userId == ownerId then return end
+    local owner = S.Players:GetPlayerByUserId(ownerId)
+    if owner and owner.Character and owner.Character:FindFirstChild("HumanoidRootPart") then
+                plr.Character:SetPrimaryPartCFrame(owner.Character.HumanoidRootPart.CFrame * CFrame.new(0,0,-3) * CFrame.Angles(0,math.rad(180),0))
+                SendNotify("TpToOwner", "Voc├¬ foi teletransportado para o Owner.", 3)
+    else
+                SendNotify("TpToOwner", "O Owner n├úo foi encontrado na experi├¬ncia.", 3)
+    end
+end)
+
+Misc_Buttons.Shaders.MouseButton1Click:Connect(function()
+        ChangeToggleColor(Misc_Buttons.Shaders)
+        if Misc_Buttons.Shaders.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                S.Lighting.Brightness = 1.5; S.Lighting.ClockTime = 17.30
+                local Sky = Instance.new("Sky")
+                Sky.SkyboxBk = "http://www.roblox.com/asset/?id=144933338"
+                Sky.SkyboxDn = "http://www.roblox.com/asset/?id=144931530"
+                Sky.SkyboxFt = "http://www.roblox.com/asset/?id=144933262"
+                Sky.SkyboxLf = "http://www.roblox.com/asset/?id=144933244"
+                Sky.SkyboxRt = "http://www.roblox.com/asset/?id=144933299"
+                Sky.SkyboxUp = "http://www.roblox.com/asset/?id=144931564"
+                Sky.StarCount = 5000
+                Sky.SunAngularSize = 5
+                Sky.Parent = S.Lighting
+                local Bloom = Instance.new("BloomEffect")
+                Bloom.Intensity = 0.3
+                Bloom.Size = 10
+                Bloom.Threshold = 0.8
+                Bloom.Parent = S.Lighting
+                local Blur = Instance.new("BlurEffect")
+                Blur.Size = 5
+                Blur.Parent = S.Lighting
+                local ColorC = Instance.new("ColorCorrectionEffect")
+                ColorC.Brightness = 0
+                ColorC.Contrast = 0.1
+                ColorC.Saturation = 0.25
+                ColorC.TintColor = Color3.fromRGB(255, 255, 255)
+                ColorC.Parent = S.Lighting
+                local SunRays = Instance.new("SunRaysEffect")
+                SunRays.Intensity = 0.1
+                SunRays.Spread = 0.8
+                SunRays.Parent = S.Lighting
+        else
+                for i,v in pairs(S.Lighting:GetChildren()) do v:Destroy() end
+                S.Lighting.Brightness = 2; S.Lighting.ClockTime = 14.5
+        end
+end)
+
+Misc_Buttons.ChangeTime.MouseButton1Click:Connect(function()
+        if Misc_Buttons.Shaders.Ticket_Asset.ImageColor3 == Color3.fromRGB(255,0,0) then
+                local Sky = Instance.new("Sky")
+                Sky.Parent = S.Lighting
+                ChangeToggleColor(Misc_Buttons.ChangeTime)
+                if Misc_Buttons.ChangeTime.Ticket_Asset.ImageColor3 == Color3.fromRGB(0,255,0) then
+                        S.Lighting.ClockTime = 19.5; Sky.StarCount = 5000
+                else
+                        S.Lighting.ClockTime = 14.5; Sky.StarCount = 0
+                end
+        else
+                SendNotify("ksx's Panel", "Por favor, desligue os shaders.", 5)
+        end
+end)
+
+Misc_Buttons.ResetLighting.MouseButton1Click:Connect(function()
+        S.Lighting.Brightness = 2; S.Lighting.ClockTime = 14.5
+        if not S.Lighting:FindFirstChildOfClass("Atmosphere") then
+                local Atmosphere = Instance.new("Atmosphere")
+                Atmosphere.Name = "Atmosphere"
+                Atmosphere.Parent = S.Lighting
+                Atmosphere.Density = 0.3
+                Atmosphere.Offset = 0.25
+                Atmosphere.Color = Color3.fromRGB(199, 199, 199)
+                Atmosphere.Decay = Color3.fromRGB(106, 112, 125)
+                Atmosphere.Glare = 0
+                Atmosphere.Haze = 0
+        else
+                S.Lighting.Atmosphere.Density = 0.3
+                S.Lighting.Atmosphere.Offset = 0.25
+                S.Lighting.Atmosphere.Color = Color3.fromRGB(199, 199, 199)
+                S.Lighting.Atmosphere.Decay = Color3.fromRGB(106, 112, 125)
+                S.Lighting.Atmosphere.Glare = 0
+                S.Lighting.Atmosphere.Haze = 0
+        end
+        if not S.Lighting:FindFirstChildOfClass("Sky") then
+                local Sky = Instance.new("Sky")
+                Sky.Name = "Sky"
+                Sky.Parent = S.Lighting
+                Sky.MoonAngularSize = 11
+                Sky.StarCount = 3000
+                Sky.SunAngularSize = 11
+        else
+                S.Lighting.Sky.MoonAngularSize = 11
+                S.Lighting.Sky.StarCount = 3000
+                S.Lighting.Sky.SunAngularSize = 11
+        end
+        if not S.Lighting:FindFirstChildOfClass("BloomEffect") then
+                local Bloom = Instance.new("BloomEffect")
+                Bloom.Name = "Bloom"
+                Bloom.Parent = S.Lighting
+                Bloom.Intensity = 1
+                Bloom.Enabled = true
+                Bloom.Size = 24
+                Bloom.Threshold = 2
+        else
+                S.Lighting.Bloom.Intensity = 1
+                S.Lighting.Bloom.Enabled = true
+                S.Lighting.Bloom.Size = 24
+                S.Lighting.Bloom.Threshold = 2
+        end
+        if not S.Lighting:FindFirstChildOfClass("DepthOfFieldEffect") then
+                local DepthOfField = Instance.new("DepthOfFieldEffect")
+                DepthOfField.Name = "DepthOfField"
+                DepthOfField.Parent = S.Lighting
+                DepthOfField.Enabled = false
+                DepthOfField.FarIntensity = 0.1
+                DepthOfField.FocusDistance = 0.05
+                DepthOfField.InFocusRadius = 30
+                DepthOfField.NearIntensity = 0.75
+        else
+                S.Lighting.DepthOfField.Enabled = false
+                S.Lighting.DepthOfField.FarIntensity = 0.1
+                S.Lighting.DepthOfField.FocusDistance = 0.05
+                S.Lighting.DepthOfField.InFocusRadius = 30
+                S.Lighting.DepthOfField.NearIntensity = 0.75
+        end
+        if not S.Lighting:FindFirstChildOfClass("SunRaysEffect") then
+                local SunRays = Instance.new("SunRaysEffect")
+                SunRays.Name = "SunRays"
+                SunRays.Parent = S.Lighting
+                SunRays.Enabled = true
+                SunRays.Intensity = 0.01
+                SunRays.Spread = 0.1
+        else
+                S.Lighting.SunRays.Enabled = true
+                S.Lighting.SunRays.Intensity = 0.01
+                S.Lighting.SunRays.Spread = 0.1
+        end
+end)
+
+Misc_Buttons.DestroyUI.MouseButton1Click:Connect(function()
+        GUI:Destroy(); ScreenButtonGui:Destroy(); if TargetTool then TargetTool:Destroy() end
+        isTagActive = false; removeAllTags(); getgenv().GUI_Loaded = false
+end)
+
+Misc_Buttons.FreeEmotes.MouseButton1Click:Connect(function()
+        pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/7yd7/Hub/refs/heads/Branch/GUIS/Emotes.lua"))() end)
+end)
+
+Misc_Buttons.ClearChat.MouseButton1Click:Connect(function()
+        local chat = S.TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
+        local function sendchat(msg) chat:SendAsync(msg) end
+        for i = 1, 6 do sendchat("") end
+        wait(0.5); sendchat("/cls")
+end)
+
+Misc_Buttons.Rejoin.MouseButton1Click:Connect(function() S.TeleportService:TeleportToPlaceInstance(placeId, jobId, plr) end)
+
+Misc_Buttons.InfYieldPremium.MouseButton1Click:Connect(function()
+        pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/EnterpriseExperience/crazyDawg/main/InfYieldOther.lua"))() end)
+end)
+
+Donate_Link.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                setclipboard("https://1pix.gg/ksxspanel"); SendNotify("Link Copiado!", "Cole no navegador para ir pra p├ígina de doa├º├úo.", 10)
+        end
+end)
+Donate_Link.MouseEnter:Connect(function() Donate_Link.TextColor3 = Color3.fromRGB(255, 100, 100) end)
+Donate_Link.MouseLeave:Connect(function() Donate_Link.TextColor3 = Color3.fromRGB(0, 100, 255) end)
+
+Support_Link.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                goDiscord(); SendNotify("Link Copiado!", "Cole no navegador para acessar o servidor de suporte.", 10)
+        end
+end)
+Support_Link.MouseEnter:Connect(function() Support_Link.TextColor3 = Color3.fromRGB(255, 100, 100) end)
+Support_Link.MouseLeave:Connect(function() Support_Link.TextColor3 = Color3.fromRGB(0, 100, 255) end)
+
+isThemeActive = savedTheme ~= "Dark"
+ChangeTheme_Button.MouseButton1Click:Connect(function()
+        isThemeActive = not isThemeActive
+        if isThemeActive then
+                Theme = Themes.Light; ChangeTheme_Button.Image = "rbxassetid://99955958887420"; ChangeTheme(Theme); WriteFile("Theme", "value", "Light")
+        else
+                Theme = Themes.Dark; ChangeTheme_Button.Image = "rbxassetid://111141131115404"; ChangeTheme(Theme); WriteFile("Theme", "value", "Dark")
+        end
+end)
+
+S.Players.PlayerRemoving:Connect(function(player)
+        pcall(function() if player.Name == TargetedPlayer then UpdateTarget(nil); SendNotify("Painel bolabola", "O jogador alvo saiu.", 5) end end)
+end)
+
+plr.CharacterAdded:Connect(function(x)
+        x:WaitForChild("Humanoid"); if SavedCheckpoint ~= nil then TeleportTO(SavedCheckpoint.X,SavedCheckpoint.Y,SavedCheckpoint.Z,"pos","safe") end
+end)
+
+OpenClose.MouseButton1Click:Connect(function() Background.Visible = not Background.Visible end)
+
+S.UserInputService.InputBegan:Connect(function(input, gamep)
+        if not gamep and input.KeyCode == Enum.KeyCode.B then Background.Visible = not Background.Visible end
+end)
+
+local canRequest = true
+local function TpToPlace(command, username)
+        if command == "?tp" and username and username ~= "" and canRequest then
+                canRequest = false
+                local data = RequestAPI("get-pos/"..username.."?user_id="..userId.."&permission=3f6a0f5d9c7a8d7c2a5d8a7c2c4cbe5c9a7c1e3d9f3f4c9e9f2f8a6d5c6b4a2")
+                if data and data.place_id and data.job_id then
+                        SendNotify("Painel bolabola", "Teleportando para o usu├írio "..username.."...", 3)
+                        task.wait(3); S.TeleportService:TeleportToPlaceInstance(data.place_id, data.job_id, plr)
+                else
+                        local errorMsg = data and data.error or "Erro desconhecido"
+                        SendNotify("Painel bolabola", errorMsg, 5)
+                end; task.delay(10, function() canRequest = true end)
+        end
+end
+local function BanUser(command, username)
+        if command == "?ban" and username and username ~= "" and canRequest then
+                canRequest = false
+                local data = RequestAPI("ban-user/"..username.."?user_id="..userId.."&permission=3f6a0f5d9c7a8d7c2a5d8a7c2c4cbe5c9a7c1e3d9f3f4c9e9f2f8a6d5c6b4a2")
+                if data and data.success then
+                        SendNotify("Painel bolabola", data.success, 5)
+                else
+                        local errorMsg = data and data.error or "Erro desconhecido"
+                        SendNotify("Painel bolabola", errorMsg, 5)
+                end; task.delay(10, function() canRequest = true end)
+        end
+end
+local function UnBanUser(command, username)
+        if command == "?unban" and username and username ~= "" and canRequest then
+                canRequest = false
+                local data = RequestAPI("unban-user/"..username.."?user_id="..userId.."&permission=3f6a0f5d9c7a8d7c2a5d8a7c2c4cbe5c9a7c1e3d9f3f4c9e9f2f8a6d5c6b4a2")
+                if data and data.success then
+                        SendNotify("ksx's Panel", data.success, 5)
+                else
+                        local errorMsg = data and data.error or "Erro desconhecido"
+                        SendNotify("Painel bolabola", errorMsg, 5)
+                end; task.delay(10, function() canRequest = true end)
+        end
+end
+S.TextChatService.SendingMessage:Connect(function(msg)
+        task.spawn(function()
+                local messageText = msg.Text
+                local args = string.split(messageText, " ")
+                local command, username = args[1]:lower(), table.concat(args, " ", 2)
+                TpToPlace(command, username); BanUser(command, username); UnBanUser(command, username)
+        end)
+end)
+
+local last_broadcast = 0
+task.spawn(function()
+        while task.wait(10) do
+                if IsUserBanned() then
+                        SendNotify("Painel bolabola", "Voc├¬ foi banido do Painel bolabola\nContate o suporte: https://discord.gg/"..discordCode, 3); goDiscord()
+                        ScreenButtonGui:Destroy(); if TargetTool then TargetTool:Destroy() end; isTagActive = false; removeAllTags(); task.wait(3); GUI:Destroy(); plr:Kick()
+                end
+                if is_vip ~= last_vip_state then
+                        if is_vip then
+                                vip_fling, vip_antifling, vip_antiforce, vip_antichatspy, vip_autosacrifice, vip_escapehandcuffs = GetVip()
+                                vipOverlay.Visible = not is_vip; SendNotify("Painel bolabola", "Seu VIP foi ativado com sucesso!", 5)
+                        else
+                                isThemeActive = false; Theme = Themes.Dark; ChangeTheme_Button.Image = "rbxassetid://111141131115404"; ChangeTheme(Theme); WriteFile("Theme", "value", "Dark")
+                                vipOverlay.Visible = not is_vip; SendNotify("Painel bolabola", "Seu VIP expirou.\nPara renovar sua assinatura acesse: https://discord.gg/"..discordCode, 5); goDiscord()
+                        end; last_vip_state = is_vip
+                end
+                local b = _broadcast; if b and b.message and b.id > last_broadcast then last_broadcast = b.id; SendNotify("AVISO DO SISTEMA", b.message, b.duration) end
+        end
+end)
+
+task.spawn(function()
+        while task.wait(30) do
+                pcall(function()
+                        local now, age = os.time(), plr.AccountAge
+                        local date_1, date_2, date_3 = os.date("%Y-%m-%d", now-age * 24 * 3600), os.date("%Y-%m-%d", now-(age+1) * 24 * 3600), os.date("%Y-%m-%d", now-(age-1) * 24 * 3600)
+                        local decode = httpRequest("GET", "https://users.roblox.com/v1/users/"..userId)
+                        local original_name, original_display, original_date = decode.name, decode.displayName, decode.created:sub(1,10)
+                        local function reconnect()
+                                GUI:Destroy(); SendNotify("Painel bolabola", "Ocorreu um erro inesperado, reconectando...", 3)
+                                task.wait(3); S.TeleportService:TeleportToPlaceInstance(placeId, jobId, plr)
+                        end
+                        if (plr.Name ~= original_name) or (plr.DisplayName ~= original_display) then reconnect(); return end
+                        if (date_1 ~= original_date) and (date_2 ~= original_date) and (date_3 ~= original_date) then reconnect() end
+                end)
+        end
+end)
