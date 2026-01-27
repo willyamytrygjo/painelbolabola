@@ -1,3 +1,4 @@
+
 local is_vip = true
 local is_staff = true
 local is_banned = false
@@ -2098,3 +2099,75 @@ task.spawn(function()
     end
 end)
 
+--[[ 
+PATCH AUTO-OPEN FINAL
+• Abre o painel automaticamente
+• Blur real
+• Animação smooth
+• Não depende de nomes específicos
+• Não usa API
+]]
+
+task.spawn(function()
+    local TweenService = game:GetService("TweenService")
+    local Lighting = game:GetService("Lighting")
+    local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
+    local gui = player:WaitForChild("PlayerGui")
+
+    -- Blur real
+    local blur = Lighting:FindFirstChild("ksx_blur")
+    if not blur then
+        blur = Instance.new("BlurEffect")
+        blur.Name = "ksx_blur"
+        blur.Size = 0
+        blur.Parent = Lighting
+    end
+
+    TweenService:Create(
+        blur,
+        TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { Size = 14 }
+    ):Play()
+
+    -- Aguarda qualquer painel grande aparecer
+    local panel
+    repeat
+        for _,sg in ipairs(gui:GetChildren()) do
+            if sg:IsA("ScreenGui") then
+                for _,v in ipairs(sg:GetDescendants()) do
+                    if v:IsA("Frame")
+                        and v.Size.X.Offset > 250
+                        and v.Size.Y.Offset > 180 then
+                        panel = v
+                        break
+                    end
+                end
+            end
+            if panel then break end
+        end
+        task.wait()
+    until panel
+
+    -- Força visibilidade + animação
+    panel.Visible = true
+    panel.AnchorPoint = Vector2.new(0.5, 0.5)
+
+    local originalSize = panel.Size
+    panel.BackgroundTransparency = 1
+    panel.Size = UDim2.new(
+        originalSize.X.Scale,
+        originalSize.X.Offset * 0.9,
+        originalSize.Y.Scale,
+        originalSize.Y.Offset * 0.9
+    )
+
+    TweenService:Create(
+        panel,
+        TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+        {
+            Size = originalSize,
+            BackgroundTransparency = 0.05
+        }
+    ):Play()
+end)
