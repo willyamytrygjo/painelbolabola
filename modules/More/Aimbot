@@ -1,96 +1,160 @@
 return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton, key, posX, posY)
+    local Players = game:GetService("Players")
     local Camera = workspace.CurrentCamera
-    local Mouse = plr:GetMouse()
 
-    local settings = {
-        Aimbot = true,
-        Aiming = false,
-        TeamCheck = false,
-        Aimbot_AimPart = "Head",
-        Aimbot_FOV_Radius = 150,
-        Aimbot_Draw_FOV = true
+    local PlaceId = game.PlaceId
+    local IsMM2, IsArsenal = PlaceId == 142823291, PlaceId == 286090429
+
+    local Settings = {
+        Enabled = true,
+        MaxDistance = 500,
+        BaseThickness = 1.5,
+        HealthESP = not IsMM2,
+        Names = true,
+        Tracer = true,
+        AllyColor = Color3.fromRGB(0, 255, 255),
+        EnemyColor = Color3.fromRGB(255, 0, 0)
     }
 
-    local fovcircle = Drawing.new("Circle")
-    fovcircle.Visible = settings.Aimbot_Draw_FOV
-    fovcircle.Radius = settings.Aimbot_FOV_Radius
-    fovcircle.Thickness = 1
-    fovcircle.Color = Color3.fromRGB(255, 0, 0)
-    fovcircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    local ESP = {}
 
-    local function IsEnemy(player)
-        if not settings.TeamCheck then return true end
-        if player.Team ~= nil and plr.Team ~= nil then
-            return player.Team ~= plr.Team
+    local function GetPlayerColor(player)
+        if IsMM2 then
+            local character, backpack = player.Character, player:FindFirstChild("Backpack")
+            local gun = (backpack and backpack:FindFirstChild("Gun")) or (character and character:FindFirstChild("Gun"))
+            local knife = (backpack and backpack:FindFirstChild("Knife")) or (character and character:FindFirstChild("Knife"))
+            if gun then return Color3.fromRGB(0, 85, 255) end
+            if knife then return Color3.fromRGB(255, 0, 0) end
+            return Color3.fromRGB(255, 255, 255)
         end
-        return true
+        return (player.Team ~= nil and player.Team == plr.Team) and Settings.AllyColor or Settings.EnemyColor
     end
 
-    local function GetClosestTarget()
-        local closest_target = nil
-        local shortest_mouse_dist = settings.Aimbot_FOV_Radius
-
-        for _, player in pairs(game:GetService("Players"):GetPlayers()) do
-            if player ~= plr and player.Character and IsEnemy(player) then
-                local char = player.Character
-                local targetPart = char:FindFirstChild(settings.Aimbot_AimPart) or char:FindFirstChild("HumanoidRootPart") or char.PrimaryPart
-                local hum = char:FindFirstChildOfClass("Humanoid")
-
-                if targetPart and (not hum or hum.Health > 0) then
-                    local screenPos, onScreen = Camera:WorldToViewportPoint(targetPart.Position)
-                    if onScreen then
-                        local mouseDist = (Vector2.new(Mouse.X, Mouse.Y) - Vector2.new(screenPos.X, screenPos.Y)).Magnitude
-                        if mouseDist < shortest_mouse_dist then
-                            shortest_mouse_dist = mouseDist
-                            closest_target = targetPart
-                        end
-                    end
-                end
-            end
-        end
-        return closest_target
+    local function CreateESP(player)
+        if ESP[player.UserId] then return end
+        local drawings = {
+            Box = Drawing.new("Square"),
+            BoxOutline = Drawing.new("Square"),
+            HealthBar = Drawing.new("Square"),
+            HealthOutline = Drawing.new("Square"),
+            Name = Drawing.new("Text"),
+            Tracer = Drawing.new("Line")
+        }
+        drawings.BoxOutline.Filled = false
+        drawings.Box.Filled = false
+        drawings.HealthOutline.Filled = true
+        drawings.HealthBar.Filled = true
+        drawings.Name.Size = 14
+        drawings.Name.Center = true
+        drawings.Name.Outline = true
+        drawings.Name.Color = Color3.new(1, 1, 1)
+        drawings.Tracer.Thickness = 1
+        ESP[player.UserId] = drawings
     end
 
-    UserInputService.InputBegan:Connect(function(input, gamep)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.Touch then
-            settings.Aiming = true
+    local function RemoveESP(player)
+        local d = ESP[player.UserId]
+        if d then
+            for _, obj in pairs(d) do obj:Remove() end
+            ESP[player.UserId] = nil
         end
+    end
+
+    local function HideESP(d)
+        for _, obj in pairs(d) do obj.Visible = false end
+    end
+
+    local function UpdateESP(player)
+        local d = ESP[player.UserId]
+        if not d then return end
+        local char = player.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        if not Settings.Enabled or not root or not hum or hum.Health <= 0 then
+            HideESP(d)
+            return
+        end
+        local pos, onScreen = Camera:WorldToViewportPoint(root.Position)
+        local dist = (root.Position - Camera.CFrame.Position).Magnitude
+        if not onScreen or dist > Settings.MaxDistance then
+            HideESP(d)
+            return
+        end
+
+        local dynamicThickness = math.max(0.1, Settings.BaseThickness - (dist / 300))
         
-        if not gamep then
-            if input.KeyCode == Enum.KeyCode[key] then
-                settings.Aimbot = not settings.Aimbot
-                SendNotify("Aimbot", settings.Aimbot and "LIGADO" or "DESLIGADO", 2)
-            elseif input.KeyCode == Enum.KeyCode.N then
-                settings.TeamCheck = not settings.TeamCheck
-                SendNotify("Team Check", "Status: " .. (settings.TeamCheck and "ATIVADO" or "DESATIVADO"), 3)
-            end
-        end
-    end)
+        local size = Vector3.new(4, 6, 0)
+        local tl = Camera:WorldToViewportPoint((root.CFrame * CFrame.new(-size.X/2, size.Y/2, 0)).Position)
+        local br = Camera:WorldToViewportPoint((root.CFrame * CFrame.new(size.X/2, -size.Y/2, 0)).Position)
+        local boxSize = Vector2.new(math.abs(tl.X - br.X), math.abs(tl.Y - br.Y))
+        local boxPos = Vector2.new(tl.X, tl.Y)
+        local color = GetPlayerColor(player)
 
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.Touch then
-            settings.Aiming = false
+        d.Box.Size = boxSize
+        d.Box.Position = boxPos
+        d.Box.Color = color
+        d.Box.Thickness = dynamicThickness
+        d.Box.Visible = true
+
+        d.BoxOutline.Size = boxSize
+        d.BoxOutline.Position = boxPos
+        d.BoxOutline.Thickness = dynamicThickness + 1
+        d.BoxOutline.Transparency = math.max(0, 1 - (dist / 400))
+        d.BoxOutline.Visible = dist < 300 
+
+        if Settings.HealthESP then
+            local health, maxHealth = hum.Health, hum.MaxHealth
+            local hPerc = health / maxHealth
+            local hSize = Vector2.new(2, boxSize.Y * hPerc)
+            local hPos = Vector2.new(boxPos.X - 5, boxPos.Y + (boxSize.Y - hSize.Y))
+            d.HealthOutline.Size = Vector2.new(4, boxSize.Y + 2)
+            d.HealthOutline.Position = Vector2.new(boxPos.X - 6, boxPos.Y - 1)
+            d.HealthOutline.Visible = dist < 400
+            d.HealthBar.Size = hSize
+            d.HealthBar.Position = hPos
+            d.HealthBar.Color = Color3.fromHSV(hPerc * 0.3, 1, 1)
+            d.HealthBar.Visible = true
+        else
+            d.HealthBar.Visible = false
+            d.HealthOutline.Visible = false
         end
-    end)
+
+        if Settings.Names then
+            d.Name.Text = string.format("%s [%d]", player.Name, math.floor(dist))
+            d.Name.Position = Vector2.new(boxPos.X + boxSize.X/2, boxPos.Y - 16)
+            d.Name.Transparency = math.max(0.3, 1 - (dist / 500))
+            d.Name.Visible = true
+        else
+            d.Name.Visible = false
+        end
+
+        if Settings.Tracer then
+            d.Tracer.From = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y)
+            d.Tracer.To = Vector2.new(pos.X, pos.Y)
+            d.Tracer.Color = color
+            d.Tracer.Transparency = math.max(0.1, 1 - (dist / 400))
+            d.Tracer.Visible = true
+        else
+            d.Tracer.Visible = false
+        end
+    end
 
     RunService.RenderStepped:Connect(function()
-        fovcircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-        fovcircle.Visible = settings.Aimbot and settings.Aimbot_Draw_FOV
-
-        if settings.Aimbot and settings.Aiming then
-            local target = GetClosestTarget()
-            if target then
-                Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Position)
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= plr then
+                if not ESP[p.UserId] then CreateESP(p) end
+                UpdateESP(p)
             end
         end
     end)
 
-    SendNotify("Aimbot", "Iniciado! Team Checker [N] está DESATIVADO", 6)
-    
-    if CreateTouchButton then
-        CreateTouchButton(function() 
-            settings.Aimbot = not settings.Aimbot 
-            SendNotify("Aimbot", settings.Aimbot and "LIGADO" or "DESLIGADO", 2)
-        end, key, posX, posY)
+    Players.PlayerRemoving:Connect(RemoveESP)
+    local function Toggle()
+        Settings.Enabled = not Settings.Enabled
+        if not Settings.Enabled then for _, d in pairs(ESP) do HideESP(d) end end
     end
+    UserInputService.InputBegan:Connect(function(i, g)
+        if not g and i.KeyCode == Enum.KeyCode[key] then Toggle() end
+    end)
+    CreateTouchButton(Toggle, key, posX, posY)
 end
