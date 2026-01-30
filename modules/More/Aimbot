@@ -5,11 +5,11 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
     local settings = {
         Aimbot = true,
         Aiming = false,
-        TeamCheck = true,
+        TeamCheck = false, -- Inicia DESATIVADO como pedido
         Aimbot_AimPart = "Head",
         Aimbot_FOV_Radius = 500,
         Aimbot_Draw_FOV = true,
-        Smoothing = 1 -- Grude máximo e instantâneo
+        Smoothing = 1 -- 1 = Grude total (sem suavização)
     }
 
     local fovcircle = Drawing.new("Circle")
@@ -20,7 +20,7 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
     fovcircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
 
     local function IsEnemy(player)
-        if not settings.TeamCheck then return true end
+        if not settings.TeamCheck then return true end -- Ataca todos se o TeamCheck estiver off
         if player.Team ~= nil and plr.Team ~= nil then
             return player.Team ~= plr.Team
         end
@@ -35,6 +35,7 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
             if player ~= plr and player.Character and IsEnemy(player) then
                 local char = player.Character
                 local hum = char:FindFirstChildOfClass("Humanoid")
+                -- Tenta Head, se não achar tenta o peito (UpperTorso/HumanoidRootPart)
                 local targetPart = char:FindFirstChild(settings.Aimbot_AimPart) or char:FindFirstChild("HumanoidRootPart")
 
                 if hum and hum.Health > 0 and targetPart then
@@ -53,21 +54,18 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
         return closest_target
     end
 
-    -- Gerenciamento de Inputs
+    -- Detecção de Input melhorada para não "soltar"
     UserInputService.InputBegan:Connect(function(input, gamep)
         if not gamep then
-            -- Ativa o grude ao segurar botões de clique ou toque
             if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.Touch then
                 settings.Aiming = true
             end
             
-            -- Alternar Aimbot (Tecla principal)
             if input.KeyCode == Enum.KeyCode[key] then
                 settings.Aimbot = not settings.Aimbot
                 SendNotify("Aimbot", settings.Aimbot and "LIGADO" or "DESLIGADO", 2)
             end
 
-            -- Alternar Team Checker (Tecla N)
             if input.KeyCode == Enum.KeyCode.N then
                 settings.TeamCheck = not settings.TeamCheck
                 local status = settings.TeamCheck and "ATIVADO" or "DESATIVADO"
@@ -82,7 +80,7 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
         end
     end)
 
-    -- Loop de Renderização (Onde o grude acontece)
+    -- Loop de Renderização Agressivo
     RunService.RenderStepped:Connect(function()
         fovcircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
         fovcircle.Visible = settings.Aimbot and settings.Aimbot_Draw_FOV
@@ -90,15 +88,15 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
         if settings.Aimbot and settings.Aiming then
             local target = GetClosestTarget()
             if target then
-                -- Força a câmera no alvo sem suavização para não soltar
+                -- Força a CFrame da câmera a travar no alvo sem atraso
                 Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Position)
             end
         end
     end)
 
-    -- Mensagens Iniciais
+    -- Mensagens ao Iniciar
     SendNotify("Aimbot", "Carregado! Tecla: " .. key, 4)
-    SendNotify("Configuração", "Aperte 'N' para ligar/desligar o Team Checker", 6)
+    SendNotify("Configuração", "Team Checker inicia DESATIVADO. Aperte 'N' para alternar.", 7)
     
     if CreateTouchButton then
         CreateTouchButton(function() 
