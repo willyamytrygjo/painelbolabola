@@ -7,9 +7,8 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
         Aiming = false,
         TeamCheck = false,
         Aimbot_AimPart = "Head",
-        Aimbot_FOV_Radius = 500,
-        Aimbot_Draw_FOV = true,
-        Smoothing = 1 
+        Aimbot_FOV_Radius = 150,
+        Aimbot_Draw_FOV = true
     }
 
     local fovcircle = Drawing.new("Circle")
@@ -20,7 +19,7 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
     fovcircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
 
     local function IsEnemy(player)
-        if not settings.TeamCheck then return true end 
+        if not settings.TeamCheck then return true end
         if player.Team ~= nil and plr.Team ~= nil then
             return player.Team ~= plr.Team
         end
@@ -34,13 +33,11 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
         for _, player in pairs(game:GetService("Players"):GetPlayers()) do
             if player ~= plr and player.Character and IsEnemy(player) then
                 local char = player.Character
+                local targetPart = char:FindFirstChild(settings.Aimbot_AimPart) or char:FindFirstChild("HumanoidRootPart") or char.PrimaryPart
                 local hum = char:FindFirstChildOfClass("Humanoid")
-               
-                local targetPart = char:FindFirstChild(settings.Aimbot_AimPart) or char:FindFirstChild("HumanoidRootPart")
 
-                if hum and hum.Health > 0 and targetPart then
+                if targetPart and (not hum or hum.Health > 0) then
                     local screenPos, onScreen = Camera:WorldToViewportPoint(targetPart.Position)
-                    
                     if onScreen then
                         local mouseDist = (Vector2.new(Mouse.X, Mouse.Y) - Vector2.new(screenPos.X, screenPos.Y)).Magnitude
                         if mouseDist < shortest_mouse_dist then
@@ -55,20 +52,17 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
     end
 
     UserInputService.InputBegan:Connect(function(input, gamep)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.Touch then
+            settings.Aiming = true
+        end
+        
         if not gamep then
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.Touch then
-                settings.Aiming = true
-            end
-            
             if input.KeyCode == Enum.KeyCode[key] then
                 settings.Aimbot = not settings.Aimbot
                 SendNotify("Aimbot", settings.Aimbot and "LIGADO" or "DESLIGADO", 2)
-            end
-
-            if input.KeyCode == Enum.KeyCode.N then
+            elseif input.KeyCode == Enum.KeyCode.N then
                 settings.TeamCheck = not settings.TeamCheck
-                local status = settings.TeamCheck and "ATIVADO" or "DESATIVADO"
-                SendNotify("Team Check", "Verificação de Time: " .. status, 3)
+                SendNotify("Team Check", "Status: " .. (settings.TeamCheck and "ATIVADO" or "DESATIVADO"), 3)
             end
         end
     end)
@@ -79,7 +73,6 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
         end
     end)
 
-
     RunService.RenderStepped:Connect(function()
         fovcircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
         fovcircle.Visible = settings.Aimbot and settings.Aimbot_Draw_FOV
@@ -87,14 +80,12 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
         if settings.Aimbot and settings.Aiming then
             local target = GetClosestTarget()
             if target then
-                -- Força a CFrame da câmera a travar no alvo sem atraso
                 Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Position)
             end
         end
     end)
 
-    SendNotify("Aimbot", "Carregado! Tecla: " .. key, 4)
-    SendNotify("Configuração", "Team Checker inicia DESATIVADO. Aperte 'N' para alternar.", 7)
+    SendNotify("Aimbot", "Iniciado! Team Checker [N] está DESATIVADO", 6)
     
     if CreateTouchButton then
         CreateTouchButton(function() 
