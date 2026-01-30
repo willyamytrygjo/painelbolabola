@@ -31,14 +31,10 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
         return hit == nil
     end
 
-    local function IsEnemy(player)
-        if player == plr or not player.Character then return false end
-
-        if player.Team ~= nil and plr.Team ~= nil then
-            return player.Team ~= plr.Team
-        end
-        return true
-    end
+local function IsEnemy(player)
+    -- Ignora você, mas aceita qualquer outro jogador independente do time
+    return player ~= plr 
+end
 
     local function GetClosestTarget()
         local closest_target = nil
