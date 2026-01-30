@@ -7,10 +7,10 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
         Aiming = false,
         Aimbot_AimPart = "Head",
         Aimbot_Draw_FOV = true,
-        Aimbot_FOV_Radius = 150, 
+        Aimbot_FOV_Radius = 200, 
         Aimbot_FOV_Color = Color3.fromRGB(0, 255, 150),
-        Smoothing = 0.15, 
-        WallCheck = true
+        Smoothing = 1, 
+        WallCheck = false
     }
 
 
