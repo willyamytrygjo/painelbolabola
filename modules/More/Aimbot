@@ -5,11 +5,11 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
     local settings = {
         Aimbot = true,
         Aiming = false,
-        TeamCheck = false, -- Inicia DESATIVADO como pedido
+        TeamCheck = false,
         Aimbot_AimPart = "Head",
         Aimbot_FOV_Radius = 500,
         Aimbot_Draw_FOV = true,
-        Smoothing = 1 -- 1 = Grude total (sem suavização)
+        Smoothing = 1 
     }
 
     local fovcircle = Drawing.new("Circle")
@@ -20,7 +20,7 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
     fovcircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
 
     local function IsEnemy(player)
-        if not settings.TeamCheck then return true end -- Ataca todos se o TeamCheck estiver off
+        if not settings.TeamCheck then return true end 
         if player.Team ~= nil and plr.Team ~= nil then
             return player.Team ~= plr.Team
         end
@@ -35,7 +35,7 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
             if player ~= plr and player.Character and IsEnemy(player) then
                 local char = player.Character
                 local hum = char:FindFirstChildOfClass("Humanoid")
-                -- Tenta Head, se não achar tenta o peito (UpperTorso/HumanoidRootPart)
+               
                 local targetPart = char:FindFirstChild(settings.Aimbot_AimPart) or char:FindFirstChild("HumanoidRootPart")
 
                 if hum and hum.Health > 0 and targetPart then
@@ -54,7 +54,6 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
         return closest_target
     end
 
-    -- Detecção de Input melhorada para não "soltar"
     UserInputService.InputBegan:Connect(function(input, gamep)
         if not gamep then
             if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.Touch then
@@ -80,7 +79,7 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
         end
     end)
 
-    -- Loop de Renderização Agressivo
+
     RunService.RenderStepped:Connect(function()
         fovcircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
         fovcircle.Visible = settings.Aimbot and settings.Aimbot_Draw_FOV
@@ -94,7 +93,6 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
         end
     end)
 
-    -- Mensagens ao Iniciar
     SendNotify("Aimbot", "Carregado! Tecla: " .. key, 4)
     SendNotify("Configuração", "Team Checker inicia DESATIVADO. Aperte 'N' para alternar.", 7)
     
