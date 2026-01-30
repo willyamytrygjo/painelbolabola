@@ -185,11 +185,11 @@ local function NewTab(name)
     return Page
 end
 
-local HomeTab    = NewTab("Dashboard")
-local CombatTab  = NewTab("Combat")
-local AnimTab    = NewTab("Animations")
-local SettingTab = NewTab("Settings")
-local MiscTab    = NewTab("Misc")
+local HomeTab    = NewTab("HOME")
+local CombatTab  = NewTab("COMBAT")
+local AnimTab    = NewTab("ANIMATIONS")
+local SettingTab = NewTab("CONFIG")
+local MiscTab    = NewTab("UTILITS")
 
 
 local ProfileFrame = Instance.new("Frame", HomeTab)
