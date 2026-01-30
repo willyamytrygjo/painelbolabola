@@ -7,7 +7,7 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
         Aiming = false,
         TeamCheck = false,
         Aimbot_AimPart = "Head",
-        Aimbot_FOV_Radius = 800,
+        Aimbot_FOV_Radius = 150,
         Aimbot_Draw_FOV = true
     }
 
