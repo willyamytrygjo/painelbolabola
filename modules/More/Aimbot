@@ -5,53 +5,43 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
     local settings = {
         Aimbot = true,
         Aiming = false,
+        TeamCheck = true,
         Aimbot_AimPart = "Head",
+        Aimbot_FOV_Radius = 500,
         Aimbot_Draw_FOV = true,
-        Aimbot_FOV_Radius = 200, 
-        Aimbot_FOV_Color = Color3.fromRGB(0, 255, 150),
-        Smoothing = 1, 
-        WallCheck = false
+        Smoothing = 1 -- Grude máximo e instantâneo
     }
-
 
     local fovcircle = Drawing.new("Circle")
     fovcircle.Visible = settings.Aimbot_Draw_FOV
     fovcircle.Radius = settings.Aimbot_FOV_Radius
-    fovcircle.Color = settings.Aimbot_FOV_Color
     fovcircle.Thickness = 1
-    fovcircle.Filled = false
-    fovcircle.Transparency = 0.8
+    fovcircle.Color = Color3.fromRGB(255, 0, 0)
     fovcircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
 
-   
-    local function IsVisible(targetPart)
-        if not settings.WallCheck then return true end
-        local ray = Ray.new(Camera.CFrame.Position, (targetPart.Position - Camera.CFrame.Position).Unit * 500)
-        local hit, pos = workspace:FindPartOnRayWithIgnoreList(ray, {plr.Character, targetPart.Parent})
-        return hit == nil
+    local function IsEnemy(player)
+        if not settings.TeamCheck then return true end
+        if player.Team ~= nil and plr.Team ~= nil then
+            return player.Team ~= plr.Team
+        end
+        return true
     end
-
-local function IsEnemy(player)
-    -- Ignora você, mas aceita qualquer outro jogador independente do time
-    return player ~= plr 
-end
 
     local function GetClosestTarget()
         local closest_target = nil
         local shortest_mouse_dist = settings.Aimbot_FOV_Radius
 
         for _, player in pairs(game:GetService("Players"):GetPlayers()) do
-            if IsEnemy(player) then
+            if player ~= plr and player.Character and IsEnemy(player) then
                 local char = player.Character
-                local humanoid = char:FindFirstChild("Humanoid")
-                local targetPart = char:FindFirstChild(settings.Aimbot_AimPart)
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                local targetPart = char:FindFirstChild(settings.Aimbot_AimPart) or char:FindFirstChild("HumanoidRootPart")
 
-                if humanoid and humanoid.Health > 0 and targetPart then
+                if hum and hum.Health > 0 and targetPart then
                     local screenPos, onScreen = Camera:WorldToViewportPoint(targetPart.Position)
                     
-                    if onScreen and IsVisible(targetPart) then
+                    if onScreen then
                         local mouseDist = (Vector2.new(Mouse.X, Mouse.Y) - Vector2.new(screenPos.X, screenPos.Y)).Magnitude
-                        
                         if mouseDist < shortest_mouse_dist then
                             shortest_mouse_dist = mouseDist
                             closest_target = targetPart
@@ -63,49 +53,57 @@ end
         return closest_target
     end
 
-    local function ToggleAimbot()
-        settings.Aimbot = not settings.Aimbot
-        fovcircle.Visible = settings.Aimbot and settings.Aimbot_Draw_FOV
-        SendNotify("Aimbot", "Status: " .. (settings.Aimbot and "Ativado" or "Desativado"), 2)
-    end
-
-  
-    UserInputService.InputBegan:Connect(function(input, gamep)
-        if not gamep and input.KeyCode == Enum.KeyCode[key] then
-            ToggleAimbot()
-        end
-    end)
-
-
+    -- Gerenciamento de Inputs
     UserInputService.InputBegan:Connect(function(input, gamep)
         if not gamep then
-            if input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.Touch then
+            -- Ativa o grude ao segurar botões de clique ou toque
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.Touch then
                 settings.Aiming = true
+            end
+            
+            -- Alternar Aimbot (Tecla principal)
+            if input.KeyCode == Enum.KeyCode[key] then
+                settings.Aimbot = not settings.Aimbot
+                SendNotify("Aimbot", settings.Aimbot and "LIGADO" or "DESLIGADO", 2)
+            end
+
+            -- Alternar Team Checker (Tecla N)
+            if input.KeyCode == Enum.KeyCode.N then
+                settings.TeamCheck = not settings.TeamCheck
+                local status = settings.TeamCheck and "ATIVADO" or "DESATIVADO"
+                SendNotify("Team Check", "Verificação de Time: " .. status, 3)
             end
         end
     end)
 
-    UserInputService.InputEnded:Connect(function(input, gamep)
-        if input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.Touch then
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.Touch then
             settings.Aiming = false
         end
     end)
 
-
+    -- Loop de Renderização (Onde o grude acontece)
     RunService.RenderStepped:Connect(function()
-
         fovcircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+        fovcircle.Visible = settings.Aimbot and settings.Aimbot_Draw_FOV
 
         if settings.Aimbot and settings.Aiming then
             local target = GetClosestTarget()
             if target then
-
-                local targetCFrame = CFrame.new(Camera.CFrame.Position, target.Position)
-                Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, settings.Smoothing)
+                -- Força a câmera no alvo sem suavização para não soltar
+                Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Position)
             end
         end
     end)
 
-    SendNotify("Aimbot", "Carregado! Tecla: " .. key, 5)
-    CreateTouchButton(ToggleAimbot, key, posX, posY)
+    -- Mensagens Iniciais
+    SendNotify("Aimbot", "Carregado! Tecla: " .. key, 4)
+    SendNotify("Configuração", "Aperte 'N' para ligar/desligar o Team Checker", 6)
+    
+    if CreateTouchButton then
+        CreateTouchButton(function() 
+            settings.Aimbot = not settings.Aimbot 
+            SendNotify("Aimbot", settings.Aimbot and "LIGADO" or "DESLIGADO", 2)
+        end, key, posX, posY)
+    end
 end
