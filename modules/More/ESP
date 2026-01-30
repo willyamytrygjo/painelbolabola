@@ -10,7 +10,7 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
         MaxDistance = 500,
         BoxThickness = 1.5,
         HealthESP = not IsMM2,
-        Names = true,
+        Names = false,
         Tracer = true,
         RefreshRate = 0,
         AllyColor = Color3.fromRGB(0, 255, 255),
