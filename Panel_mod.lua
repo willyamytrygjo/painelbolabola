@@ -186,8 +186,8 @@ local function NewTab(name)
 end
 
 local HomeTab    = NewTab("HOME")
-local CombatTab  = NewTab("COMBAT")
-local AnimTab    = NewTab("ANIMATIONS")
+local CombatTab  = NewTab("TARGET")
+local AnimTab    = NewTab("ANIMATION")
 local SettingTab = NewTab("CONFIG")
 local MiscTab    = NewTab("UTILITS")
 
