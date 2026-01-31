@@ -85,7 +85,7 @@ return function(plr, RunService, UserInputService, SendNotify, CreateTouchButton
         end
     end)
 
-    SendNotify("Aimbot", "Iniciado! Team Checker [N] está DESATIVADO", 6)
+    SendNotify("Aimbot by Bolabola", "Iniciado! Team Checker [N] está DESATIVADO", 6)
     
     if CreateTouchButton then
         CreateTouchButton(function() 
