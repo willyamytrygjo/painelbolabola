@@ -77,16 +77,20 @@ function KsxPanel:SetAccent(color)
     end
 end
 
--- Presets de tema prontos
+-- Presets de tema (mapeados das cores originais do ksx Panel)
+-- bg=BackgroundColor3  panel=BackgroundColor3_title  elem=BackgroundColor3_button  accent=BackgroundColor3_button
 KsxPanel.ThemePresets = {
-    { name="Roxo",      bg="#0d0d12", panel="#13131a", elem="#1a1a24", accent="#7c6ff7" },
-    { name="Azul",      bg="#080f1a", panel="#0d1624", elem="#121e30", accent="#3b82f6" },
-    { name="Verde",     bg="#080f0a", panel="#0d160f", elem="#121e15", accent="#22c55e" },
-    { name="Vermelho",  bg="#130808", panel="#1a0d0d", elem="#241212", accent="#ef4444" },
-    { name="Dourado",   bg="#120e03", panel="#1a1408", elem="#24190c", accent="#f59e0b" },
-    { name="Rosa",      bg="#130810", panel="#1a0d17", elem="#24121f", accent="#ec4899" },
-    { name="Ciano",     bg="#031212", panel="#081919", elem="#0c2424", accent="#06b6d4" },
-    { name="Branco",    bg="#0f0f0f", panel="#161616", elem="#1e1e1e", accent="#e2e8f0" },
+    { name="Dark",   bg="#232323", panel="#000000", elem="#646464", accent="#646464" },
+    { name="Light",  bg="#969696", panel="#ffffff", elem="#e1e1e1", accent="#5a5aaa" },
+    { name="Slate",  bg="#465064", panel="#28323c", elem="#64788c", accent="#64788c" },
+    { name="Blue",   bg="#3c3caa", panel="#141450", elem="#5050c8", accent="#5050c8" },
+    { name="Pink",   bg="#aa3caa", panel="#501450", elem="#c850c8", accent="#c850c8" },
+    { name="Violet", bg="#6e28a0", panel="#3c005a", elem="#9650c8", accent="#9650c8" },
+    { name="Ruby",   bg="#be1423", panel="#960014", elem="#dc2832", accent="#dc2832" },
+    { name="Gold",   bg="#966e0f", panel="#b48c14", elem="#dcb428", accent="#dcb428" },
+    { name="Sand",   bg="#b4a064", panel="#c8b478", elem="#e6d296", accent="#c8a01e" },
+    { name="Ocean",  bg="#14788c", panel="#00465a", elem="#28a0b4", accent="#28a0b4" },
+    { name="Cyber",  bg="#140028", panel="#28003c", elem="#00c8ff", accent="#00c8ff" },
 }
 
 -- ─────────────────────────────────────────────
