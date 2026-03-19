@@ -361,38 +361,72 @@ function KsxPanel:CreateWindow(cfg)
         Parent = topbar,
     })
 
-    -- Close / Minimise buttons (Mac style)
-    local function makeTopBtn(color, xOff, callback)
-        local btn = create("TextButton", {
+    -- Topbar image buttons (close, minimize, fullscreen)
+    local function makeTopBtn(color, xOff, iconId, callback)
+        local btn = create("ImageButton", {
             AnchorPoint = Vector2.new(1, 0.5),
             Position = UDim2.new(1, xOff, 0.5, 0),
-            Size = UDim2.fromOffset(13, 13),
+            Size = UDim2.fromOffset(16, 16),
             BackgroundColor3 = color,
-            Text = "",
+            Image = iconId,
+            ImageColor3 = Color3.new(1, 1, 1),
             BorderSizePixel = 0,
             ZIndex = 6,
             Parent = topbar,
         })
         create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = btn })
+        btn.MouseEnter:Connect(function() tween(btn, { ImageTransparency = 0 }, 0.1) end)
+        btn.MouseLeave:Connect(function() tween(btn, { ImageTransparency = 0 }, 0.1) end)
         btn.MouseButton1Click:Connect(callback)
         return btn
     end
 
-    local visible = true
-    makeTopBtn(Color3.fromHex("#ff5f57"), -14, function()
-        tween(win, { Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1 }, 0.22)
-        task.delay(0.25, function() sg:Destroy() end)
-    end)
-    makeTopBtn(Color3.fromHex("#febc2e"), -32, function()
-        if visible then
-            tween(win, { Size = UDim2.fromOffset(680, 46) }, 0.22)
-        else
-            tween(win, { Size = UDim2.fromOffset(680, 460) }, 0.22)
+    -- Vermelho – Fechar/Destruir
+    makeTopBtn(
+        Color3.fromHex("#ff5f57"), -14,
+        "rbxassetid://104914974782570",
+        function()
+            tween(win, { Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1 }, 0.22)
+            task.delay(0.25, function() sg:Destroy() end)
         end
-        visible = not visible
-    end)
-    makeTopBtn(Color3.fromHex("#28c840"), -50, function()
-        -- fullscreen placeholder
+    )
+
+    -- Verde – Minimizar (ocultar conteúdo, só topbar fica)
+    local minimized = false
+    makeTopBtn(
+        Color3.fromHex("#28c840"), -34,
+        "rbxassetid://133760664135962",
+        function()
+            if not minimized then
+                tween(win, { Size = UDim2.fromOffset(680, 46) }, 0.22)
+            else
+                tween(win, { Size = UDim2.fromOffset(680, 460) }, 0.22)
+            end
+            minimized = not minimized
+        end
+    )
+
+    -- Amarelo – Tela cheia toggle
+    local fullscreen = false
+    local ICON_EXPAND  = "rbxassetid://100024618512724"
+    local ICON_SHRINK  = "rbxassetid://106458431521571"
+    local normalSize   = UDim2.fromOffset(680, 460)
+    local fullSize     = UDim2.new(1, -20, 1, -20)
+
+    local yellowBtn = makeTopBtn(
+        Color3.fromHex("#febc2e"), -54,
+        ICON_EXPAND,
+        function() end -- callback definido abaixo após criação
+    )
+    yellowBtn.MouseButton1Click:Connect(function()
+        fullscreen = not fullscreen
+        if fullscreen then
+            yellowBtn.Image = ICON_SHRINK
+            tween(win, { Size = fullSize }, 0.25, Enum.EasingStyle.Quart)
+        else
+            yellowBtn.Image = ICON_EXPAND
+            tween(win, { Size = normalSize }, 0.25, Enum.EasingStyle.Quart)
+        end
     end)
 
     -- Draggable
