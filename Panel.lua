@@ -362,26 +362,47 @@ function KsxPanel:CreateWindow(cfg)
     })
 
     -- Topbar image buttons (close, minimize, fullscreen)
+    -- Estrutura: TextButton (fundo colorido + clique) + ImageLabel filho (ícone visível por cima)
     local function makeTopBtn(color, xOff, iconId, callback)
-        local btn = create("ImageButton", {
+        -- Botão base (fundo colorido, captura cliques)
+        local btn = create("TextButton", {
             AnchorPoint = Vector2.new(1, 0.5),
             Position = UDim2.new(1, xOff, 0.5, 0),
             Size = UDim2.fromOffset(16, 16),
             BackgroundColor3 = color,
-            Image = iconId,
-            ImageColor3 = Color3.new(1, 1, 1),
+            Text = "",
             BorderSizePixel = 0,
+            AutoButtonColor = false,
             ZIndex = 6,
             Parent = topbar,
         })
         create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = btn })
-        btn.MouseEnter:Connect(function() tween(btn, { ImageTransparency = 0 }, 0.1) end)
-        btn.MouseLeave:Connect(function() tween(btn, { ImageTransparency = 0 }, 0.1) end)
+
+        -- Imagem por cima do fundo
+        local icon = create("ImageLabel", {
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.fromScale(0.5, 0.5),
+            Size = UDim2.fromOffset(12, 12),
+            BackgroundTransparency = 1,
+            Image = iconId,
+            ImageColor3 = Color3.new(1, 1, 1),
+            ZIndex = 7,
+            Parent = btn,
+        })
+
+        btn.MouseEnter:Connect(function()
+            tween(btn, { BackgroundTransparency = 0.2 }, 0.1)
+        end)
+        btn.MouseLeave:Connect(function()
+            tween(btn, { BackgroundTransparency = 0 }, 0.1)
+        end)
         btn.MouseButton1Click:Connect(callback)
-        return btn
+
+        -- retorna btn e icon para poder trocar a imagem depois
+        return btn, icon
     end
 
-    -- Vermelho – Fechar/Destruir
+    -- 🔴 Vermelho – Destruir painel
     makeTopBtn(
         Color3.fromHex("#ff5f57"), -14,
         "rbxassetid://104914974782570",
@@ -391,7 +412,7 @@ function KsxPanel:CreateWindow(cfg)
         end
     )
 
-    -- Verde – Minimizar (ocultar conteúdo, só topbar fica)
+    -- 🟢 Verde – Minimizar / restaurar
     local minimized = false
     makeTopBtn(
         Color3.fromHex("#28c840"), -34,
@@ -406,28 +427,27 @@ function KsxPanel:CreateWindow(cfg)
         end
     )
 
-    -- Amarelo – Tela cheia toggle
+    -- 🟡 Amarelo – Tela cheia toggle (troca ícone ao clicar)
     local fullscreen = false
-    local ICON_EXPAND  = "rbxassetid://100024618512724"
-    local ICON_SHRINK  = "rbxassetid://106458431521571"
-    local normalSize   = UDim2.fromOffset(680, 460)
-    local fullSize     = UDim2.new(1, -20, 1, -20)
+    local ICON_EXPAND = "rbxassetid://100024618512724"
+    local ICON_SHRINK = "rbxassetid://106458431521571"
+    local normalSize  = UDim2.fromOffset(680, 460)
+    local fullSize    = UDim2.new(1, -20, 1, -20)
 
-    local yellowBtn = makeTopBtn(
+    local _, yellowIcon = makeTopBtn(
         Color3.fromHex("#febc2e"), -54,
         ICON_EXPAND,
-        function() end -- callback definido abaixo após criação
-    )
-    yellowBtn.MouseButton1Click:Connect(function()
-        fullscreen = not fullscreen
-        if fullscreen then
-            yellowBtn.Image = ICON_SHRINK
-            tween(win, { Size = fullSize }, 0.25, Enum.EasingStyle.Quart)
-        else
-            yellowBtn.Image = ICON_EXPAND
-            tween(win, { Size = normalSize }, 0.25, Enum.EasingStyle.Quart)
+        function()
+            fullscreen = not fullscreen
+            if fullscreen then
+                yellowIcon.Image = ICON_SHRINK
+                tween(win, { Size = fullSize }, 0.25, Enum.EasingStyle.Quart)
+            else
+                yellowIcon.Image = ICON_EXPAND
+                tween(win, { Size = normalSize }, 0.25, Enum.EasingStyle.Quart)
+            end
         end
-    end)
+    )
 
     -- Draggable
     makeDraggable(win, topbar)
