@@ -8,7 +8,7 @@
     
     ksx's Panel  –  A sleek Roblox Script UI Library
     Version: 1.0.0
-    Author: ksx
+    Author: BOLABOLA
     
     Usage:
         local KsxPanel = loadstring(...)()
