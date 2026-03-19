@@ -331,7 +331,7 @@ function KsxPanel:CreateWindow(cfg)
     -- ────────────────────────────────────────────
     --  🔴 VERMELHO — destrói o painel para sempre
     -- ────────────────────────────────────────────
-    mkTopBtn(Color3.fromHex("#ff5f57"), -14, "rbxassetid://104914974782570", function()
+    mkTopBtn(Color3.fromHex("#ff5f57"), -14, "rbxassetid://102150038589481", function()
         tw(win, { Size=UDim2.fromOffset(0,0), BackgroundTransparency=1 }, .22)
         task.delay(.25, function() sg:Destroy() end)
     end)
@@ -342,8 +342,8 @@ function KsxPanel:CreateWindow(cfg)
     local fullscreen   = false
     local normalSize   = UDim2.fromOffset(680, 460)
     local fullSize     = UDim2.new(1, -20, 1, -20)
-    local ICON_EXPAND  = "rbxassetid://100024618512724"
-    local ICON_SHRINK  = "rbxassetid://106458431521571"
+    local ICON_EXPAND  = "rbxassetid://134160425540032"
+    local ICON_SHRINK  = "rbxassetid://131244840545418"
 
     local _, greenIcon = mkTopBtn(Color3.fromHex("#28c840"), -34, ICON_EXPAND, function()
         fullscreen = not fullscreen
@@ -360,7 +360,7 @@ function KsxPanel:CreateWindow(cfg)
     --  🟡 AMARELO — fecha (oculta) o painel
     --   O painel reabre ao pressionar toggleKey (padrão: B)
     -- ────────────────────────────────────────────
-    mkTopBtn(Color3.fromHex("#febc2e"), -54, "rbxassetid://133760664135962", function()
+    mkTopBtn(Color3.fromHex("#febc2e"), -54, "rbxassetid://99330921068303", function()
         win.Visible = false
     end)
 
