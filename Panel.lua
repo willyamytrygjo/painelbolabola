@@ -40,12 +40,17 @@ local Theme = {
     TextPrimary   = Color3.fromHex("#e8e6ff"),
     TextSecondary = Color3.fromHex("#8884aa"),
     TextMuted     = Color3.fromHex("#55527a"),
+    TextCredits   = Color3.fromHex("#ffffff"),
+    ImageColor    = Color3.fromHex("#191919"),
     ToggleOn      = Color3.fromHex("#7c6ff7"),
     ToggleOff     = Color3.fromHex("#2a2a3d"),
 }
 
-local _bgReg     = {}
-local _accentReg = {}
+local _bgReg          = {}
+local _accentReg      = {}
+local _textReg        = {} -- {obj, prop, role} role: "primary"|"secondary"|"muted"
+local _imageReg       = {} -- {obj, prop}
+local _textCreditsReg = {} -- {obj, prop}
 
 local function regBG(obj, prop, key)
     table.insert(_bgReg, {obj=obj, prop=prop, key=key})
@@ -54,6 +59,20 @@ end
 local function regAcc(obj, prop)
     table.insert(_accentReg, {obj=obj, prop=prop})
     pcall(function() obj[prop] = Theme.Accent end)
+end
+local function regText(obj, prop, role)
+    -- role: "primary" | "secondary" | "muted"
+    table.insert(_textReg, {obj=obj, prop=prop, role=role or "secondary"})
+    local col = role=="primary" and Theme.TextPrimary or role=="muted" and Theme.TextMuted or Theme.TextSecondary
+    pcall(function() obj[prop] = col end)
+end
+local function regImage(obj, prop)
+    table.insert(_imageReg, {obj=obj, prop=prop})
+    pcall(function() obj[prop] = Theme.ImageColor end)
+end
+local function regTextCredits(obj, prop)
+    table.insert(_textCreditsReg, {obj=obj, prop=prop})
+    pcall(function() obj[prop] = Theme.TextCredits end)
 end
 
 function KsxPanel:SetTheme(bg, panel, element)
@@ -77,20 +96,39 @@ function KsxPanel:SetAccent(color)
     end
 end
 
+function KsxPanel:SetTextColors(primary, secondary, muted, credits, imageColor)
+    if primary    then Theme.TextPrimary   = primary    end
+    if secondary  then Theme.TextSecondary = secondary  end
+    if muted      then Theme.TextMuted     = muted      end
+    if credits    then Theme.TextCredits   = credits    end
+    if imageColor then Theme.ImageColor    = imageColor end
+    for _, e in ipairs(_textReg) do
+        pcall(function()
+            local col = e.role=="primary" and Theme.TextPrimary or e.role=="muted" and Theme.TextMuted or Theme.TextSecondary
+            e.obj[e.prop] = col
+        end)
+    end
+    for _, e in ipairs(_textCreditsReg) do
+        pcall(function() e.obj[e.prop] = Theme.TextCredits end)
+    end
+    for _, e in ipairs(_imageReg) do
+        pcall(function() e.obj[e.prop] = Theme.ImageColor end)
+    end
+end
+
 -- Presets de tema (mapeados das cores originais do ksx Panel)
--- bg=BackgroundColor3  panel=BackgroundColor3_title  elem=BackgroundColor3_button  accent=BackgroundColor3_button
 KsxPanel.ThemePresets = {
-    { name="Dark",   bg="#232323", panel="#000000", elem="#646464", accent="#646464" },
-    { name="Light",  bg="#969696", panel="#ffffff", elem="#e1e1e1", accent="#5a5aaa" },
-    { name="Slate",  bg="#465064", panel="#28323c", elem="#64788c", accent="#64788c" },
-    { name="Blue",   bg="#3c3caa", panel="#141450", elem="#5050c8", accent="#5050c8" },
-    { name="Pink",   bg="#aa3caa", panel="#501450", elem="#c850c8", accent="#c850c8" },
-    { name="Violet", bg="#6e28a0", panel="#3c005a", elem="#9650c8", accent="#9650c8" },
-    { name="Ruby",   bg="#be1423", panel="#960014", elem="#dc2832", accent="#dc2832" },
-    { name="Gold",   bg="#966e0f", panel="#b48c14", elem="#dcb428", accent="#dcb428" },
-    { name="Sand",   bg="#b4a064", panel="#c8b478", elem="#e6d296", accent="#c8a01e" },
-    { name="Ocean",  bg="#14788c", panel="#00465a", elem="#28a0b4", accent="#28a0b4" },
-    { name="Cyber",  bg="#140028", panel="#28003c", elem="#00c8ff", accent="#00c8ff" },
+    { name="Dark",   bg="#232323", panel="#000000", elem="#646464", accent="#646464", text="#969696", textMuted="#8c8c8c", textPrimary="#ffffff", imageColor="#191919" },
+    { name="Light",  bg="#969696", panel="#ffffff", elem="#e1e1e1", accent="#5a5aaa", text="#000000", textMuted="#232323", textPrimary="#000000", imageColor="#969696" },
+    { name="Slate",  bg="#465064", panel="#28323c", elem="#64788c", accent="#64788c", text="#d2d7e1", textMuted="#b4b9c3", textPrimary="#e6ebf0", imageColor="#1e232d" },
+    { name="Blue",   bg="#3c3caa", panel="#141450", elem="#5050c8", accent="#5050c8", text="#d2d2ff", textMuted="#b4b4ff", textPrimary="#e6e6ff", imageColor="#00003c" },
+    { name="Pink",   bg="#aa3caa", panel="#501450", elem="#c850c8", accent="#c850c8", text="#ffd2ff", textMuted="#ffb4ff", textPrimary="#ffe6ff", imageColor="#3c003c" },
+    { name="Violet", bg="#6e28a0", panel="#3c005a", elem="#9650c8", accent="#9650c8", text="#dcc8f5", textMuted="#c8aae6", textPrimary="#f0dcff", imageColor="#280046" },
+    { name="Ruby",   bg="#be1423", panel="#960014", elem="#dc2832", accent="#dc2832", text="#f5d2d7", textMuted="#e6b4b9", textPrimary="#ffe6eb", imageColor="#5a000a" },
+    { name="Gold",   bg="#966e0f", panel="#b48c14", elem="#dcb428", accent="#dcb428", text="#ffe696", textMuted="#e6c878", textPrimary="#fff0c8", imageColor="#785a0a" },
+    { name="Sand",   bg="#b4a064", panel="#c8b478", elem="#e6d296", accent="#c8a01e", text="#50461e", textMuted="#6e643c", textPrimary="#3c3214", imageColor="#8c7846" },
+    { name="Ocean",  bg="#14788c", panel="#00465a", elem="#28a0b4", accent="#28a0b4", text="#c8f0fa", textMuted="#aadce6", textPrimary="#dcffff", imageColor="#00323c" },
+    { name="Cyber",  bg="#140028", panel="#28003c", elem="#00c8ff", accent="#00c8ff", text="#b4ffff", textMuted="#96e6e6", textPrimary="#c8ffff", imageColor="#0f0019" },
 }
 
 -- ─────────────────────────────────────────────
@@ -1064,6 +1102,13 @@ function KsxPanel:CreateWindow(cfg)
                         Color3.fromHex(p.elem)
                     )
                     KsxPanel:SetAccent(Color3.fromHex(p.accent))
+                    if p.text then KsxPanel:SetTextColors(
+                        Color3.fromHex(p.textPrimary),
+                        Color3.fromHex(p.text),
+                        Color3.fromHex(p.textMuted),
+                        Color3.fromHex(p.textPrimary),
+                        Color3.fromHex(p.imageColor)
+                    ) end
                     -- Pisca o swatch selecionado
                     tw(swatch, {BackgroundTransparency=.4}, .1)
                     tw(swatch, {BackgroundTransparency=0}, .2)
